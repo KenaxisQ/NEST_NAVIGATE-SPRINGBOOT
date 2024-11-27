@@ -25,7 +25,7 @@ public class UserController {
         return ResponseEntity.ok(userService.findByEmailOrPhone(identifier));
     }
 
-    @PostMapping("/resetPassword")
+    @PutMapping("/resetPassword")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
         return userService.resetPassword(resetPasswordDto);
     }

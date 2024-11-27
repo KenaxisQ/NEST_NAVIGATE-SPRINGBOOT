@@ -37,7 +37,7 @@ public class authenticationController {
     public ResponseEntity<?> LoginWithGoogleAuth(@RequestBody TokenDto tokenDto) {
         return authenticationService.validateGoogleAuthLogin(tokenDto);
     }
-    @PostMapping("/forgotPassword")
+    @PutMapping("/forgotPassword")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordDto forgotPasswordDto) {
         return authenticationService.forgotPassword(forgotPasswordDto);
     }

@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService{
     public ResponseEntity<?> resetPassword(ResetPasswordDto resetPasswordDto) {
         try {
             // Fetch user by identifier (email or phone)
-            User user = userRepository.findById(resetPasswordDto.getIdentifier())
+            User user = userRepository.findById(resetPasswordDto.getUserId())
                     .orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND.getCode(), "User not found", HttpStatus.NOT_FOUND));
 
             // Verify the old password

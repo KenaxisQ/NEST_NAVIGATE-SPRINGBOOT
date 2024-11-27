@@ -29,7 +29,7 @@ public class SecurityConfiguration {
     private static final String[] WHITE_LIST_URL = {
             "/v3/api-docs/**", "/swagger-resources/**", "/configuration/ui",
             "/configuration/security", "/swagger-ui/**", "/webjars/**", "/swagger-ui.html", "/auth/**",
-            "/api/test/**" };
+            "/api/test/**","/" };
 
     @Autowired
     public SecurityConfiguration(

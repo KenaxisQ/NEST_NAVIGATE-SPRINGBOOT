@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class ResetPasswordDto {
-    String identifier;
+    String userId;
     String OldPassword;
     String NewPassword;
 }
