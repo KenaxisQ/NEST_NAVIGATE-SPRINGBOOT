@@ -25,10 +25,7 @@ public class ApplicationConfiguration {
     @Bean
     UserDetailsService userDetailsService() {
         return identifier -> {
-            Optional<User> user = userRepository.findByEmail(identifier);
-            if (user.isEmpty()) {
-                user = userRepository.findByPhone(identifier);
-            }
+            Optional<User> user = userRepository.findById(identifier);
             return user.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
         };
     }

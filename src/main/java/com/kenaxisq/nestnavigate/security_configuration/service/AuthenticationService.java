@@ -325,7 +325,7 @@ public class AuthenticationService {
                 + "            <span style=\"display: block; text-align: center; font-size: 12px; color: #777;\">Valid until " + formattedExpiryTime + "</span>"
                 + "        </div>"
                 + "        <div class=\"image-container\">"
-                + "            <img src=\"https://ibb.co/0KbRW0W\" alt=\"Real Estate\">"
+                + "            <img src=\"https://tinyurl.com/nestnavigate\" alt=\"Real Estate\">"
                 + "        </div>"
                 + "        <p>If you did not request this verification, please disregard this email.</p>"
                 + "        <div class=\"footer\">"
