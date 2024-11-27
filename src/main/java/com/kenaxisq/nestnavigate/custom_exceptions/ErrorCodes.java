@@ -13,7 +13,7 @@ public enum ErrorCodes {
     INSUFFICIENT_PERMISSIONS("AUTH_004", "Insufficient permissions to perform this action", HttpStatus.FORBIDDEN),
     ACCOUNT_LOCKED("AUTH_005", "Account has been locked", HttpStatus.FORBIDDEN),
     SESSION_EXPIRED("AUTH_006", "Session has expired", HttpStatus.UNAUTHORIZED),
-
+    INVALID_OLD_PASSWORD("AUT_007", "Old password is incorrect", HttpStatus.BAD_REQUEST),
     // User Related Errors (USR_XXX)
     USER_NOT_FOUND("USR_NOT_FOUND", "User not found", HttpStatus.NOT_FOUND),
     USER_NOT_VERIFIED("USR_NOT_VERIFIED", "User not verified, please verify your email", HttpStatus.UNAUTHORIZED),
@@ -31,6 +31,7 @@ public enum ErrorCodes {
     INVALID_EMAIL_FORMAT("VAL_003", "Invalid email format", HttpStatus.BAD_REQUEST),
     INVALID_PHONE_FORMAT("VAL_004", "Invalid phone number format", HttpStatus.BAD_REQUEST),
     INVALID_DATE_FORMAT("VAL_005", "Invalid date format", HttpStatus.BAD_REQUEST),
+    VALIDATION_FAILED("VAL_006", "Validation failed", HttpStatus.BAD_REQUEST),
 
     // Database Operation Errors (DB_XXX)
     DATABASE_ERROR("DB_001", "Database operation failed", HttpStatus.INTERNAL_SERVER_ERROR),

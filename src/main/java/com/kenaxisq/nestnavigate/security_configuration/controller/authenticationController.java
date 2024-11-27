@@ -1,9 +1,6 @@
 package com.kenaxisq.nestnavigate.security_configuration.controller;
 
-import com.kenaxisq.nestnavigate.security_configuration.dto.LoginUserDto;
-import com.kenaxisq.nestnavigate.security_configuration.dto.LoginWithOTPDto;
-import com.kenaxisq.nestnavigate.security_configuration.dto.RegisterUserDto;
-import com.kenaxisq.nestnavigate.security_configuration.dto.VerifyUserDto;
+import com.kenaxisq.nestnavigate.security_configuration.dto.*;
 import com.kenaxisq.nestnavigate.security_configuration.service.AuthenticationService;
 
 import org.springframework.http.ResponseEntity;
@@ -37,8 +34,16 @@ public class authenticationController {
         return authenticationService.validateEmailOtpLogin(verifyUserDto.getEmail(), verifyUserDto.getVerificationCode());
     }
     @PostMapping("/validateGoogleAuthLogin")
-    public ResponseEntity<?> LoginWithGoogleAuth(@RequestBody String token) {
-        return authenticationService.validateGoogleAuthLogin(token);
+    public ResponseEntity<?> LoginWithGoogleAuth(@RequestBody TokenDto tokenDto) {
+        return authenticationService.validateGoogleAuthLogin(tokenDto);
+    }
+    @PostMapping("/forgotPassword")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordDto forgotPasswordDto) {
+        return authenticationService.forgotPassword(forgotPasswordDto);
+    }
+    @PostMapping("/refreshToken")
+    public ResponseEntity<?> refreshToken(@RequestBody TokenDto tokenDto) {
+        return authenticationService.refreshAccessToken(tokenDto);
     }
 
 

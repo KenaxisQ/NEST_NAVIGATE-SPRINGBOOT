@@ -1,5 +1,6 @@
 package com.kenaxisq.nestnavigate.security_configuration.service;
 
+import com.kenaxisq.nestnavigate.custom_exceptions.ApiException;
 import com.kenaxisq.nestnavigate.security_configuration.entity.Token;
 import com.kenaxisq.nestnavigate.security_configuration.repository.TokenRepository;
 import com.kenaxisq.nestnavigate.user.entity.User;
@@ -16,6 +17,7 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -183,46 +185,41 @@ public class JwtService {
             JWKSet jwkSet = JWKSet.load(jwkSetURL);
             List<JWK> keys = jwkSet.getKeys();
 
-            JWK matchedJWK = null;
-            for (JWK key : keys) {
-                if (key.getKeyID().equals(header.getKeyID())) {
-                    matchedJWK = key;
-                    break;
-                }
-            }
-
-            if (matchedJWK == null) {
-                throw new IllegalArgumentException("No matching JWK found for key ID: " + header.getKeyID());
-            }
+            JWK matchedJWK = keys.stream()
+                    .filter(key -> key.getKeyID().equals(header.getKeyID()))
+                    .findFirst()
+                    .orElseThrow(() -> new ApiException("NO_MATCHING_JWK", "No matching JWK found for key ID: " + header.getKeyID(), HttpStatus.BAD_REQUEST));
 
             JWSVerifier verifier = new RSASSAVerifier(matchedJWK.toRSAKey());
 
             // Verify the signature
             if (!signedJWT.verify(verifier)) {
-                throw new IllegalArgumentException("Invalid JWT signature");
+                throw new ApiException("INVALID_SIGNATURE", "Invalid JWT signature", HttpStatus.UNAUTHORIZED);
             }
 
             // Extract the JWT claims
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
-            Map<String, Object> payload = claims.getClaims();
+            Date expirationTime = claims.getExpirationTime();
 
             // Check if the token is expired
-            Date expirationTime = claims.getExpirationTime();
-            boolean isExpired = expirationTime.before(new Date());
-            if (isExpired) {
+            if (expirationTime != null && expirationTime.before(new Date())) {
                 logger.error("JWT token is expired");
-                return "JWT token is expired";
+                throw new ApiException("INVALID_TOKEN", "JWT token is expired", HttpStatus.UNAUTHORIZED);
             }
 
-            // Log the payload
-            logPayload(payload);
+            // Extract email from JWT claims
+            String email = claims.getStringClaim("email");
+            if (email == null || email.isEmpty()) {
+                throw new ApiException("INVALID_CLAIMS", "JWT token does not contain a valid email claim", HttpStatus.BAD_REQUEST);
+            }
 
-            return "Token successfully decoded and logged.";
+            return email;
         } catch (ParseException | IOException e) {
             logger.error("Error decoding Google JWT token: " + e.getMessage());
-            return null;
+            throw new ApiException("INVALID_TOKEN", "Invalid Google JWT token", HttpStatus.UNAUTHORIZED);
         } catch (JOSEException e) {
-            throw new RuntimeException(e);
+            logger.error("JOSE Exception: " + e.getMessage());
+            throw new ApiException("JWT_VERIFICATION_ERROR", "Error verifying JWT token", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

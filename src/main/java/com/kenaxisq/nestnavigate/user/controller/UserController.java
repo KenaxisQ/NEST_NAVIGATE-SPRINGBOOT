@@ -1,5 +1,6 @@
 package com.kenaxisq.nestnavigate.user.controller;
 
+import com.kenaxisq.nestnavigate.user.dto.ResetPasswordDto;
 import com.kenaxisq.nestnavigate.user.entity.User;
 import com.kenaxisq.nestnavigate.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,11 @@ public class UserController {
     @GetMapping("/{identifier}")
     public ResponseEntity<User> getUser(@PathVariable String identifier) {
         return ResponseEntity.ok(userService.findByEmailOrPhone(identifier));
+    }
+
+    @PostMapping("/resetPassword")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
+        return userService.resetPassword(resetPasswordDto);
     }
 }
 //class-level requirement

@@ -1,7 +1,6 @@
 package com.kenaxisq.nestnavigate.security_configuration.service;
 
-import com.kenaxisq.nestnavigate.security_configuration.dto.AuthenticationResponse;
-import com.kenaxisq.nestnavigate.security_configuration.dto.RegisterUserDto;
+import com.kenaxisq.nestnavigate.security_configuration.dto.*;
 import com.kenaxisq.nestnavigate.user.entity.User;
 import com.kenaxisq.nestnavigate.user.repository.UserRepository;
 import com.kenaxisq.nestnavigate.user.service.UserService;
@@ -22,10 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class AuthenticationService {
@@ -55,15 +51,22 @@ public class AuthenticationService {
 
     public ResponseEntity<?> login(String identifier, String password) {
         try {
+            if (identifier == null || identifier.isEmpty()) {
+                throw new ApiException(ErrorCodes.VALIDATION_FAILED.getCode(), "Identifier is required",HttpStatus.BAD_REQUEST);
+            }
+            if (password == null || password.isEmpty()) {
+                throw new ApiException(ErrorCodes.VALIDATION_FAILED.getCode(), "Password is required", HttpStatus.BAD_REQUEST);
+            }
+
             User user = userService.findByEmailOrPhone(identifier);
             if (userService.validatePassword(user, password)) {
-                if(!user.isUserVerified())
-                    throw new ApiException(ErrorCodes.USER_NOT_VERIFIED);
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
                 jwtService.saveToken(accessToken, user, false);
                 jwtService.saveToken(refreshToken, user, true);
-                AuthenticationResponse response = new AuthenticationResponse(accessToken, refreshToken, "Login successful");
+                String message = "Login successful";
+                if(!user.isUserVerified()) message = "Login successful, Please verify your account";
+                AuthenticationResponse response = new AuthenticationResponse(accessToken, refreshToken, message);
                 return ResponseEntity.ok(ResponseBuilder.success(response));
             }
         } catch (ApiException e) {
@@ -122,8 +125,9 @@ public class AuthenticationService {
         }
     }
 
-    public ResponseEntity<?> validateGoogleAuthLogin(String token) {
+    public ResponseEntity<?> validateGoogleAuthLogin(TokenDto tokenDto) {
         try{
+            String token = tokenDto.getToken();
             String email = jwtService.decodeGoogleJwtToken(token);
             if (email == null) {
                 throw new ApiException(ErrorCodes.INVALID_TOKEN);
@@ -145,9 +149,22 @@ public class AuthenticationService {
 
     public ResponseEntity<?> register(RegisterUserDto user) {
         try {
-            if (userRepository.findByEmail(user.getEmail()).isPresent() || userRepository.findByPhone(user.getPhone()).isPresent()) {
-                throw new ApiException(ErrorCodes.USER_ALREADY_EXISTS);
+            validateRegisterUserDto(user);
+
+            Optional<User> existingUserByEmail = userRepository.findByEmail(user.getEmail());
+            Optional<User> existingUserByPhone = userRepository.findByPhone(user.getPhone());
+
+            if (existingUserByEmail.isPresent() || existingUserByPhone.isPresent()) {
+                User foundUser = existingUserByEmail.orElseGet(existingUserByPhone::get);
+
+                if (!foundUser.isUserVerified()) {
+                    sendVerificationCodeToEmail(foundUser);
+                    return ResponseEntity.ok(ResponseBuilder.success(foundUser, "User already found, verification code sent to your email"));
+                }
+
+                throw new ApiException(ErrorCodes.USER_ALREADY_EXISTS.getCode(), "User already exists with this email or phone", HttpStatus.CONFLICT);
             }
+
             User createuser = new User(user.getName(), user.getEmail(),user.getPhone(),user.getPassword());
             createuser.setPassword(passwordEncoder.encode(user.getPassword()));
 
@@ -165,15 +182,16 @@ public class AuthenticationService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", ErrorCodes.INTERNAL_SERVER_ERROR.getCode()));
         }
     }
-
-    public ResponseEntity<?> refreshAccessToken(String refreshToken) {
+    public ResponseEntity<?> refreshAccessToken(TokenDto tokenDto) {
         try {
-            User user = userRepository.findByEmail(jwtService.extractUserId(refreshToken))
+            String refreshToken = tokenDto.getToken();
+            User user = userRepository.findById(jwtService.extractUserId(refreshToken))
                     .orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND));
             if (jwtService.isValidRefreshToken(refreshToken, user)) {
                 String newAccessToken = jwtService.generateAccessToken(user);
+                String newRefreshToken = jwtService.generateRefreshToken(user);
                 jwtService.saveToken(newAccessToken, user, false);
-                AuthenticationResponse response = new AuthenticationResponse(newAccessToken, refreshToken, "Token refreshed successfully");
+                AuthenticationResponse response = new AuthenticationResponse(newAccessToken, newRefreshToken, "Token refreshed successfully");
                 return ResponseEntity.ok(ResponseBuilder.success(response));
             } else {
                 throw new ApiException(ErrorCodes.INVALID_TOKEN);
@@ -224,6 +242,68 @@ public class AuthenticationService {
         } catch (Exception e) {
             logger.error("Unexpected error during user verification: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", ErrorCodes.INTERNAL_SERVER_ERROR.getCode()));
+        }
+    }
+
+    public ResponseEntity<?> forgotPassword(ForgotPasswordDto forgotPasswordDto) {
+        try {
+            String identifier = forgotPasswordDto.getIdentifier();
+            if (identifier == null || identifier.isEmpty()) {
+                throw new ApiException(ErrorCodes.VALIDATION_FAILED.getCode(), "Identifier is required",HttpStatus.BAD_REQUEST);
+            }
+            User user = userService.findByEmailOrPhone(identifier);
+            if (user != null) {
+                sendVerificationCodeToEmail(user);
+                return ResponseEntity.ok(ResponseBuilder.success(user.getEmail(), "Verification code sent to your email"));
+            }
+        } catch (ApiException e) {
+            logger.error("Forgot Password error: {}", e.getMessage());
+            return ResponseEntity.status(e.getStatus()).body(ResponseBuilder.error(e));
+        } catch (Exception e) {
+            logger.error("Unexpected error during login: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", ErrorCodes.INTERNAL_SERVER_ERROR.getCode()));
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseBuilder.error(HttpStatus.UNAUTHORIZED, "Invalid credentials", ErrorCodes.INVALID_CREDENTIALS.getCode()));
+
+    }
+
+    public ResponseEntity<?> verifyAndResetPassword(VerifyForgotPasswordDto verifyForgotPasswordDto) {
+        try {
+            Optional<User> optionalUser = userRepository.findByEmailOrPhone(verifyForgotPasswordDto.getIdentifier());
+            User user = optionalUser.orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND.getCode(), "User not found", HttpStatus.NOT_FOUND));
+
+            if (verifyForgotPasswordDto.getCode().equals(user.getVerificationCode()) && user.getVerificationCodeExpiresAt().isAfter(LocalDateTime.now())) {
+                user.setPassword(passwordEncoder.encode(verifyForgotPasswordDto.getPassword()));
+                user.setVerificationCode(null);
+                user.setVerificationCodeExpiresAt(null);
+                userRepository.save(user);
+
+                return ResponseEntity.ok(ResponseBuilder.success(null, "Password reset successful"));
+            } else {
+                throw new ApiException(ErrorCodes.VALIDATION_FAILED.getCode(), "Invalid verification code or the code has expired", HttpStatus.BAD_REQUEST);
+            }
+        } catch (ApiException e) {
+            logger.error("Forgot Password error: {}", e.getMessage());
+            return ResponseEntity.status(e.getStatus()).body(ResponseBuilder.error(e));
+        } catch (Exception e) {
+            logger.error("Unexpected error during verification or password reset: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", ErrorCodes.INTERNAL_SERVER_ERROR.getCode()));
+        }
+    }
+
+    private void validateRegisterUserDto(RegisterUserDto user) {
+        if (user.getName() == null || user.getName().isEmpty()) {
+            throw new ApiException(ErrorCodes.VALIDATION_FAILED.getCode(), "Name is required", HttpStatus.BAD_REQUEST);
+        }
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+            throw new ApiException(ErrorCodes.VALIDATION_FAILED.getCode(), "Email is required", HttpStatus.BAD_REQUEST);
+        }
+        if (user.getPhone() == null || user.getPhone().isEmpty()) {
+            throw new ApiException(ErrorCodes.VALIDATION_FAILED.getCode(), "Phone is required", HttpStatus.BAD_REQUEST);
+        }
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            throw new ApiException(ErrorCodes.VALIDATION_FAILED.getCode(), "Password is required", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -324,9 +404,9 @@ public class AuthenticationService {
                 + "            <div id=\"verificationCode\" class=\"verification-code\" onclick=\"copyToClipboard()\">" + verificationCode + "</div>"
                 + "            <span style=\"display: block; text-align: center; font-size: 12px; color: #777;\">Valid until " + formattedExpiryTime + "</span>"
                 + "        </div>"
-                + "        <div class=\"image-container\">"
-                + "            <img src=\"https://tinyurl.com/nestnavigate\" alt=\"Real Estate\">"
-                + "        </div>"
+//                + "        <div class=\"image-container\">"
+//                + "            <img src=\"https://tinyurl.com/nestnavigate\" alt=\"Real Estate\">"
+//                + "        </div>"
                 + "        <p>If you did not request this verification, please disregard this email.</p>"
                 + "        <div class=\"footer\">"
                 + "            <p>&copy; 2028 Nest Navigate. All rights reserved.</p>"
