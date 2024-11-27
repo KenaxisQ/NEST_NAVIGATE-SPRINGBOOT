@@ -12,7 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -60,7 +63,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public ResponseEntity<?> resetPassword(ResetPasswordDto resetPasswordDto) {
+    public String resetPassword(ResetPasswordDto resetPasswordDto) {
         try {
             // Fetch user by identifier (email or phone)
             User user = userRepository.findById(resetPasswordDto.getUserId())
@@ -68,23 +71,127 @@ public class UserServiceImpl implements UserService{
 
             // Verify the old password
             if (!passwordEncoder.matches(resetPasswordDto.getOldPassword(), user.getPassword())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(ResponseBuilder.error(HttpStatus.BAD_REQUEST, "Old password is incorrect", ErrorCodes.INVALID_OLD_PASSWORD.getCode()));
-            }
+                throw new ApiException(ErrorCodes.INVALID_OLD_PASSWORD);
+                }
 
             // Encode and set the new password
             user.setPassword(passwordEncoder.encode(resetPasswordDto.getNewPassword()));
             userRepository.save(user);
 
-            return ResponseEntity.ok(ResponseBuilder.success(null, "Password reset successful"));
+            return "Password reset successful";
         } catch (ApiException e) {
-            logger.error("Error resetting password: {}", e.getMessage());
-            return ResponseEntity.status(e.getStatus())
-                    .body(ResponseBuilder.error(e));
+            throw e;
         } catch (Exception e) {
             logger.error("Unexpected error during password reset: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", ErrorCodes.INTERNAL_SERVER_ERROR.getCode()));
+            throw new ApiException(ErrorCodes.INTERNAL_SERVER_ERROR.getCode(), "An unexpected error occurred",HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Override
+    public User updateUser(User user) {
+        try {
+            // Fetch existing user by id
+            Optional<User> optionalExistingUser = userRepository.findById(user.getId());
+            if (optionalExistingUser.isEmpty()) {
+                throw new ApiException(ErrorCodes.USER_NOT_FOUND);
+            }
+            User existingUser = optionalExistingUser.get();
+
+            if (!StringUtils.hasText(user.getEmail())) {
+                user.setEmail(existingUser.getEmail());
+            }
+
+            // Validate phone number for uniqueness
+            if (user.getPhone() != null) {
+                Optional<User> optionalUserByPhone = userRepository.findByPhone(user.getPhone());
+                if (optionalUserByPhone.isPresent() && !optionalUserByPhone.get().getId().equals(user.getId())) {
+                    throw new ApiException(ErrorCodes.PHONE_NUMBER_ALREADY_EXISTS.getCode(),
+                            ErrorCodes.PHONE_NUMBER_ALREADY_EXISTS.getMessage(),
+                            ErrorCodes.PHONE_NUMBER_ALREADY_EXISTS.getHttpStatus());
+                }
+                existingUser.setPhone(user.getPhone());
+            }
+
+            // Update non-null fields using helper method
+            updateNonNullFields(user, existingUser);
+
+            // Save and return the updated user
+            return userRepository.save(existingUser);
+        } catch (ApiException e) {
+            logger.error("Error updating user: {}", e.getMessage());
+            throw e; // Rethrow to be handled by global exception handler
+        } catch (Exception e) {
+            logger.error("Unexpected error during user update: {}", e.getMessage());
+            throw new ApiException(ErrorCodes.INTERNAL_SERVER_ERROR.getCode(),
+                    "An unexpected error occurred while updating the user",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public String deleteUser(String id) {
+        try {
+            User existingUser = userRepository.findById(id)
+                    .orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND));
+            userRepository.deleteById(id);
+            return "User deleted successfully";
+
+        } catch (ApiException ex) {
+            logger.error("API error while deleting user with ID {}: {}", id, ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("Unexpected error while deleting user with ID {}: {}", id, ex.getMessage());
+            throw new ApiException("UNKNOWN_EXCEPTION", ex.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public User getUser(String id) {
+        try {
+            logger.info("User ServiceImpl: getUser() : Fetching User From DB for user id: {}", id);
+            Optional<User> userOptional = userRepository.findById(id);
+            if (userOptional.isEmpty()) {
+                throw new ApiException(ErrorCodes.USER_NOT_FOUND);
+            }
+            User user = userOptional.get();
+            logger.info("User ServiceImpl: getUser() : Fetch successful for user id: {}", id);
+            return user;
+        } catch (ApiException e) {
+            logger.error("Error while retrieving user id: {}", id, e);
+            throw e; // Re-throwing ApiException to ensure correct error codes are propagated
+        } catch (Exception e) {
+            logger.error("Unexpected error while retrieving user id: {}", id, e);
+            throw new ApiException("GETUSER_ERR", "An unexpected error occurred while retrieving the user", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public List<User> getUsers() {
+        try {
+            logger.info("User Controller: getUsers() : Fetching all the Users from DB....");
+            Iterable<User> usersList = userRepository.findAll();
+            if (!usersList.iterator().hasNext()) {
+                logger.warn("User Controller: getUsers() : No users found in the DB.");
+                throw new ApiException(ErrorCodes.USER_EMPTY);
+            }
+            List<User> users = new ArrayList<>();
+            usersList.forEach(users::add);
+            return users;
+
+        } catch (Exception e) {
+            logger.error(String.format("User Controller: getUsers() : Error occurred"), e);
+            throw new ApiException(e.getMessage(),"GETUSERS_ERR",HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
+
+    private void updateNonNullFields(User source, User target) {
+        if (StringUtils.hasText(source.getName())) target.setName(source.getName());
+        if (StringUtils.hasText(source.getPassword())) target.setPassword(passwordEncoder.encode(source.getPassword()));
+        if (source.getRole() != null) target.setRole(source.getRole());
+        if (source.getProperties_listed() > 0) target.setProperties_listed(source.getProperties_listed());
+        if (source.getProperties_listing_limit() > 0) target.setProperties_listing_limit(source.getProperties_listing_limit());
+        target.setActive(source.isActive());
     }
 }

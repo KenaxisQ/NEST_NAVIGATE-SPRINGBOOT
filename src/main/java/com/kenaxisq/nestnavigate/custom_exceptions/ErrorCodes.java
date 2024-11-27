@@ -49,7 +49,10 @@ public enum ErrorCodes {
     INTERNAL_SERVER_ERROR("SYS_001", "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR),
     SERVICE_UNAVAILABLE("SYS_002", "Service temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE),
     EXTERNAL_API_ERROR("SYS_003", "External API call failed", HttpStatus.BAD_GATEWAY),
-    TIMEOUT_ERROR("SYS_004", "Operation timed out", HttpStatus.GATEWAY_TIMEOUT);
+    TIMEOUT_ERROR("SYS_004", "Operation timed out", HttpStatus.GATEWAY_TIMEOUT),
+
+    // Property Errors (PRTY_XXX)
+    ERR_PROPERTY_NOT_FOUND("PRTY_001", "No Property with the specified ID found", HttpStatus.NOT_FOUND);
 
     private final String code;
     private final String message;
