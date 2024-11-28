@@ -1,43 +1,55 @@
 package com.kenaxisq.nestnavigate.property.validators;
 
+import com.kenaxisq.nestnavigate.property.dto.ResidentialPropertyDto;
+import com.kenaxisq.nestnavigate.utils.property.*;
+import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.kenaxisq.nestnavigate.property.dto.ResidentialPropertyDto;
-import com.kenaxisq.nestnavigate.utils.property.Directions;
-import com.kenaxisq.nestnavigate.utils.property.Furniture;
-import com.kenaxisq.nestnavigate.utils.property.PropertyCategory;
-import com.kenaxisq.nestnavigate.utils.property.PropertyStatus;
-import org.springframework.util.StringUtils;
-
 public class PropertyValidator {
 
-    public static List<String> validateResidentialPropertyDto(ResidentialPropertyDto residentialPropertyDto) {
+    public static List<String> validateResidentialPropertyDto(ResidentialPropertyDto dto) {
         List<String> missingFields = new ArrayList<>();
-        if (!StringUtils.hasText(residentialPropertyDto.getTitle())) { missingFields.add("title"); }
-        if (!StringUtils.hasText(residentialPropertyDto.getType())) { missingFields.add("type"); }
-        if (residentialPropertyDto.getFacing() == null) { missingFields.add("facing"); }
-        if (!StringUtils.hasText(String.valueOf(residentialPropertyDto.getPropertyListingFor()))) { missingFields.add("propertyListingFor"); }
-        if (residentialPropertyDto.getFurnitureStatus() == null) { missingFields.add("furnitureStatus"); }
-        if (!StringUtils.hasText(residentialPropertyDto.getDescription())) { missingFields.add("description"); }
-        if (residentialPropertyDto.getSuperBuiltUpArea() == null) { missingFields.add("superBuiltUpArea"); }
-        if (residentialPropertyDto.getPrice() == null) { missingFields.add("price"); }
-        if (residentialPropertyDto.getMoveInDate() == null) { missingFields.add("moveInDate"); }
-        if (!StringUtils.hasText(residentialPropertyDto.getPrimaryContact())) { missingFields.add("primaryContact"); }
-        if (!StringUtils.hasText(residentialPropertyDto.getMandal())) { missingFields.add("mandal"); }
-        if (!StringUtils.hasText(residentialPropertyDto.getVillage())) { missingFields.add("village"); }
-        if (!StringUtils.hasText(residentialPropertyDto.getZip())) { missingFields.add("zip"); }
+        if (!StringUtils.hasText(dto.getTitle())) { missingFields.add("title"); }
+        if (!StringUtils.hasText(dto.getType())) { missingFields.add("type"); }
+        if (dto.getPropertyCategory() == null) { missingFields.add("propertyCategory"); }
+        if (dto.getFacing() == null) { missingFields.add("facing"); }
+        if (!StringUtils.hasText(String.valueOf(dto.getPropertyListingFor()))) { missingFields.add("propertyListingFor"); }
+        if (!StringUtils.hasText(dto.getProjectName())) { missingFields.add("projectName"); }
+        if (dto.getFurnitureStatus() == null) { missingFields.add("furnitureStatus"); }
+        if (!StringUtils.hasText(dto.getFurnitureStatusDescription())) { missingFields.add("furnitureStatusDescription"); }
+        if (!StringUtils.hasText(dto.getDescription())) { missingFields.add("description"); }
+        if (dto.getSuperBuiltUpArea() == null) { missingFields.add("superBuiltUpArea"); }
+        if (dto.getCarpetArea() == null) { missingFields.add("carpetArea"); }
+        if (dto.getPrice() == null) { missingFields.add("price"); }
+        if (dto.getAdvance() == null) { missingFields.add("advance"); }
+        if (dto.getLength() == null) { missingFields.add("length"); }
+        if (dto.getWidth() == null) { missingFields.add("width"); }
+        if (dto.getPoojaRoom() == null) { missingFields.add("poojaRoom"); }
+        if (dto.getNoOfBedrooms() == null) { missingFields.add("noOfBedrooms"); }
+        if (dto.getNoOfBathrooms() == null) { missingFields.add("noOfBathrooms"); }
+        if (dto.getNoOfRooms() == null) { missingFields.add("noOfRooms"); }
+        if (dto.getNoOfBalconies() == null) { missingFields.add("noOfBalconies"); }
+        if (dto.getIsNegotiable() == null) { missingFields.add("isNegotiable"); }
+        if (!StringUtils.hasText(dto.getPrimaryContact())) { missingFields.add("primaryContact"); }
+        if (!StringUtils.hasText(dto.getSecondaryContact())) { missingFields.add("secondaryContact"); }
+        if (!StringUtils.hasText(dto.getMandal())) { missingFields.add("mandal"); }
+        if (!StringUtils.hasText(dto.getVillage())) { missingFields.add("village"); }
+        if (!StringUtils.hasText(dto.getZip())) { missingFields.add("zip"); }
+        if (!StringUtils.hasText(dto.getMedia())) { missingFields.add("media"); }
+        if (dto.getMoveInDate() == null) { missingFields.add("moveInDate"); }
+
         // Check for valid enum values
-        if (residentialPropertyDto.getFacing() != null && !isValidEnumValue(Directions.class, residentialPropertyDto.getFacing().name())) {
+        if (dto.getFacing() != null && !isValidEnumValue(Directions.class, dto.getFacing().name())) {
             missingFields.add("facing (invalid value)");
         }
-        if (residentialPropertyDto.getFurnitureStatus() != null && !isValidEnumValue(Furniture.class, residentialPropertyDto.getFurnitureStatus().name())) {
+        if (dto.getFurnitureStatus() != null && !isValidEnumValue(Furniture.class, dto.getFurnitureStatus().name())) {
             missingFields.add("furnitureStatus (invalid value)");
         }
-        if (residentialPropertyDto.getPropertyCategory() != null && !isValidEnumValue(PropertyCategory.class, residentialPropertyDto.getPropertyCategory().name())) {
+        if (dto.getPropertyCategory() != null && !isValidEnumValue(PropertyCategory.class, dto.getPropertyCategory().name())) {
             missingFields.add("propertyCategory (invalid value)");
         }
-        if (residentialPropertyDto.getStatus() != null && !isValidEnumValue(PropertyStatus.class, residentialPropertyDto.getStatus().name())) {
+        if (dto.getStatus() != null && !isValidEnumValue(PropertyStatus.class, dto.getStatus().name())) {
             missingFields.add("status (invalid value)");
         }
 

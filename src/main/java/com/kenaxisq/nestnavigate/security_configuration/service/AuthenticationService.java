@@ -84,6 +84,7 @@ public class AuthenticationService {
             User user = userService.findByEmail(email);
             if (!user.isUserVerified())
                 throw new ApiException(ErrorCodes.USER_NOT_VERIFIED);
+            sendVerificationCodeToEmail(user, "LOGIN_OTP");
            return ResponseEntity.ok(ResponseBuilder.success(user, "OTP sent successful!!"));
         } catch (ApiException e) {
             logger.error("Error: while sending OTP to User : {}", e.getMessage());
@@ -158,7 +159,7 @@ public class AuthenticationService {
                 User foundUser = existingUserByEmail.orElseGet(existingUserByPhone::get);
 
                 if (!foundUser.isUserVerified()) {
-                    sendVerificationCodeToEmail(foundUser);
+                    sendVerificationCodeToEmail(foundUser, "Account Verification");
                     return ResponseEntity.ok(ResponseBuilder.success(foundUser, "User already found, verification code sent to your email"));
                 }
 
@@ -171,7 +172,7 @@ public class AuthenticationService {
             User savedUser = userRepository.save(createuser);
 
             // Send the verification email
-            sendVerificationCodeToEmail(savedUser);
+            sendVerificationCodeToEmail(savedUser,"REGISTRATION");
 
             return ResponseEntity.ok(ResponseBuilder.success(savedUser, "Registration successful"));
         } catch (ApiException e) {
@@ -205,27 +206,6 @@ public class AuthenticationService {
         }
     }
 
-    public ResponseEntity<?> sendVerificationEmail(User user) {
-        try {
-            // Generate and set the verification code
-            String verificationCode = generateVerificationCode();
-            user.setVerificationCode(verificationCode);
-            user.setVerificationCodeExpiresAt(LocalDateTime.now().plusHours(1)); // Code expires in 1 hour
-            userRepository.save(user);
-
-            // Send the email with the verification code
-            sendVerificationCodeToEmail(user);
-
-            return ResponseEntity.ok(ResponseBuilder.success(null, "Verification email sent successfully"));
-        } catch (MessagingException e) {
-            logger.error("Error sending verification email: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to send verification email", ErrorCodes.EXTERNAL_API_ERROR.getCode()));
-        } catch (Exception e) {
-            logger.error("Unexpected error during send verification email: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", ErrorCodes.INTERNAL_SERVER_ERROR.getCode()));
-        }
-    }
-
     public ResponseEntity<?> verifyUser(String email, String verificationCode) {
         try {
             User user = userRepository.findByEmail(email).orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND));
@@ -253,7 +233,7 @@ public class AuthenticationService {
             }
             User user = userService.findByEmailOrPhone(identifier);
             if (user != null) {
-                sendVerificationCodeToEmail(user);
+                sendVerificationCodeToEmail(user,"FORGOT_PASSWORD");
                 return ResponseEntity.ok(ResponseBuilder.success(user.getEmail(), "Verification code sent to your email"));
             }
         } catch (ApiException e) {
@@ -267,7 +247,7 @@ public class AuthenticationService {
 
     }
 
-    public ResponseEntity<?> verifyAndResetPassword(VerifyForgotPasswordDto verifyForgotPasswordDto) {
+    public ResponseEntity<ApiResponse<String>> verifyAndResetPassword(VerifyForgotPasswordDto verifyForgotPasswordDto) {
         try {
             Optional<User> optionalUser = userRepository.findByEmailOrPhone(verifyForgotPasswordDto.getIdentifier());
             User user = optionalUser.orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND.getCode(), "User not found", HttpStatus.NOT_FOUND));
@@ -284,11 +264,10 @@ public class AuthenticationService {
             }
         } catch (ApiException e) {
             logger.error("Forgot Password error: {}", e.getMessage());
-            return ResponseEntity.status(e.getStatus()).body(ResponseBuilder.error(e));
+            throw e;
         } catch (Exception e) {
             logger.error("Unexpected error during verification or password reset: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", ErrorCodes.INTERNAL_SERVER_ERROR.getCode()));
+            throw new ApiException(ErrorCodes.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -307,14 +286,36 @@ public class AuthenticationService {
         }
     }
 
-    private void sendVerificationCodeToEmail(User user) throws MessagingException {
-        String subject = "Account Verification";
+
+
+    private void sendVerificationCodeToEmail(User user, String useCase) throws MessagingException {
+        // Decide the subject and introductory message based on the useCase
+        String subject;
+        String introMessage;
+
+        switch (useCase) {
+            case "REGISTRATION":
+                subject = "Account Verification";
+                introMessage = "Welcome to Nest Navigate! To ensure the security of your account, please enter the verification code below to complete your registration:";
+                break;
+            case "FORGOT_PASSWORD":
+                subject = "Password Reset Request";
+                introMessage = "We received a request to reset your password. Please enter the verification code below to reset your password:";
+                break;
+            case "LOGIN_OTP":
+                subject = "Login Verification Code";
+                introMessage = "To secure your login, please enter the verification code below:";
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid use case for email verification.");
+        }
+
         String verificationCode = generateVerificationCode();
         user.setVerificationCode(verificationCode);
         LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(5);
         user.setVerificationCodeExpiresAt(expiryTime);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMM yyyy hh:mm a", Locale.ENGLISH);
-        String formattedExpiryTime = expiryTime.format(formatter) ;
+        String formattedExpiryTime = expiryTime.format(formatter);
         userRepository.save(user);
 
         String htmlMessage = "<!DOCTYPE html>"
@@ -322,7 +323,7 @@ public class AuthenticationService {
                 + "<head>"
                 + "    <meta charset=\"UTF-8\">"
                 + "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
-                + "    <title>Verification Email</title>"
+                + "    <title>" + subject + "</title>"
                 + "    <style>"
                 + "        body {"
                 + "            font-family: Arial, sans-serif;"
@@ -365,25 +366,6 @@ public class AuthenticationService {
                 + "            color: #aaa;"
                 + "            margin-top: 20px;"
                 + "        }"
-                + "        .image-container {"
-                + "            text-align: center;"
-                + "            margin: 20px 0;"
-                + "        }"
-                + "        .image-container img {"
-                + "            width: 100%;"
-                + "            height: auto;"
-                + "            border-radius: 8px;"
-                + "        }"
-                + "        .button {"
-                + "            display: inline-block;"
-                + "            background-color: #007bff;"
-                + "            color: #fff;"
-                + "            padding: 10px 20px;"
-                + "            text-decoration: none;"
-                + "            border-radius: 5px;"
-                + "            margin: 20px auto;"
-                + "            text-align: center;"
-                + "        }"
                 + "    </style>"
                 + "    <script>"
                 + "        function copyToClipboard() {"
@@ -398,16 +380,13 @@ public class AuthenticationService {
                 + "</head>"
                 + "<body>"
                 + "    <div class=\"container\">"
-                + "        <h2>Welcome to Nest Navigate!</h2>"
-                + "        <p>Thank you for choosing Nest Navigate for your real estate needs. To ensure the security of your account, please enter the verification code below:</p>"
+                + "        <h2>" + subject + "</h2>"
+                + "        <p>" + introMessage + "</p>"
                 + "        <div style=\"text-align:center\">"
                 + "            <div id=\"verificationCode\" class=\"verification-code\" onclick=\"copyToClipboard()\">" + verificationCode + "</div>"
                 + "            <span style=\"display: block; text-align: center; font-size: 12px; color: #777;\">Valid until " + formattedExpiryTime + "</span>"
                 + "        </div>"
-//                + "        <div class=\"image-container\">"
-//                + "            <img src=\"https://tinyurl.com/nestnavigate\" alt=\"Real Estate\">"
-//                + "        </div>"
-                + "        <p>If you did not request this verification, please disregard this email.</p>"
+                + "        <p>If you did not request this, please disregard this email.</p>"
                 + "        <div class=\"footer\">"
                 + "            <p>&copy; 2028 Nest Navigate. All rights reserved.</p>"
                 + "            <p>Srikakulam, Andhrapradesh, India</p>"
@@ -418,7 +397,6 @@ public class AuthenticationService {
 
         emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
     }
-
     private String getDayOfMonthSuffix(int n) {
         if (n >= 11 && n <= 13) {
             return "th";

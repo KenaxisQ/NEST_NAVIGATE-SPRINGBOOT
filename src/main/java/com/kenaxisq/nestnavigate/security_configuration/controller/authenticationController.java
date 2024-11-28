@@ -3,6 +3,7 @@ package com.kenaxisq.nestnavigate.security_configuration.controller;
 import com.kenaxisq.nestnavigate.security_configuration.dto.*;
 import com.kenaxisq.nestnavigate.security_configuration.service.AuthenticationService;
 
+import com.kenaxisq.nestnavigate.user.dto.ResetPasswordDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,10 +38,15 @@ public class authenticationController {
     public ResponseEntity<?> LoginWithGoogleAuth(@RequestBody TokenDto tokenDto) {
         return authenticationService.validateGoogleAuthLogin(tokenDto);
     }
-    @PutMapping("/forgotPassword")
+    @PostMapping("/forgotPassword")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordDto forgotPasswordDto) {
         return authenticationService.forgotPassword(forgotPasswordDto);
     }
+    @PostMapping("/verifyAndResetPassword")
+    public ResponseEntity<?> verifyAndResetPassword(@RequestBody VerifyForgotPasswordDto verifyForgotPasswordDto) {
+        return authenticationService.verifyAndResetPassword(verifyForgotPasswordDto);
+    }
+
     @PostMapping("/refreshToken")
     public ResponseEntity<?> refreshToken(@RequestBody TokenDto tokenDto) {
         return authenticationService.refreshAccessToken(tokenDto);
