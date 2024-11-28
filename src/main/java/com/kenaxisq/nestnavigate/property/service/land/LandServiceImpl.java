@@ -35,7 +35,7 @@ public class LandServiceImpl implements LandService{
     public Property postLandProperty(Property land, String userId) {
         try {
             User user = userService.getUser(userId);
-            if (user.getProperties_listed() < 1) {
+            if (user.getProperties_listed() > 1) {
                 throw new ApiException(ErrorCodes.PROPERTY_LISTING_LIMIT_EXCEEDED);
             }
             List<String> missingFields = PropertyValidator.validateLand(land);
@@ -49,6 +49,7 @@ public class LandServiceImpl implements LandService{
             Property property = new Property();
             property = propertyRepository.save(land);
             userService.updatePropertyListingLimit(userId, user.getProperties_listing_limit() - 1);
+            userService.updatePropertyListed(userId, user.getProperties_listed()+1);
             // Save the property entity to the database
             return property;
         }

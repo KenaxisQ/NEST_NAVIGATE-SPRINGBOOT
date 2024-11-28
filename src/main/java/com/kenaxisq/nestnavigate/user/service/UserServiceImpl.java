@@ -5,11 +5,9 @@ import com.kenaxisq.nestnavigate.custom_exceptions.ErrorCodes;
 import com.kenaxisq.nestnavigate.user.dto.ResetPasswordDto;
 import com.kenaxisq.nestnavigate.user.entity.User;
 import com.kenaxisq.nestnavigate.user.repository.UserRepository;
-import com.kenaxisq.nestnavigate.utils.ResponseBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -187,9 +185,17 @@ public class UserServiceImpl implements UserService{
     @Override
     public void updatePropertyListingLimit(String userId, Integer limit){
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND));
-        user.setProperties_listed(limit);
+        user.setProperties_listing_limit(limit);
         userRepository.save(user);
         logger.info("Property Listing Limit for User {} updated to: {}",user.getName(),user.getProperties_listing_limit());
+//            return String.format("Property Listing Limit for User %s updated to: %d",user.getName(),user.getProperties_listing_limit());
+    }
+    @Override
+    public void updatePropertyListed(String userId, Integer limit){
+        User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND));
+        user.setProperties_listed(limit);
+        userRepository.save(user);
+        logger.info("Property Listed for User {} updated to: {}",user.getName(),user.getProperties_listed());
 //            return String.format("Property Listing Limit for User %s updated to: %d",user.getName(),user.getProperties_listing_limit());
     }
 

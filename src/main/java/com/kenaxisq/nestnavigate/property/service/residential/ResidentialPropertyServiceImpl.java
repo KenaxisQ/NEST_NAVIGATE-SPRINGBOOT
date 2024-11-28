@@ -59,6 +59,7 @@ import java.util.List;
                 property.setOwner(user);
                 property = propertyRepository.save(property);
                 userService.updatePropertyListingLimit(userId, user.getProperties_listing_limit() - 1);
+                userService.updatePropertyListed(userId,user.getProperties_listed()+1);
                 // Save the property entity to the database
                 return property;
             }

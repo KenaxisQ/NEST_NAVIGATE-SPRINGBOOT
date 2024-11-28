@@ -37,7 +37,7 @@ public class PGServiceImpl implements PGService{
     public Property postPgProperty(Property pg, String userId) {
         try {
             User user = userService.getUser(userId);
-            if (user.getProperties_listed() < 1) {
+            if (user.getProperties_listed() > 1) {
                 throw new ApiException(ErrorCodes.PROPERTY_LISTING_LIMIT_EXCEEDED);
             }
             List<String> missingFields = PropertyValidator.validatePg(pg);
@@ -50,6 +50,7 @@ public class PGServiceImpl implements PGService{
             pg.setOwner(user);
             pg = propertyRepository.save(pg);
             userService.updatePropertyListingLimit(userId, user.getProperties_listing_limit() - 1);
+            userService.updatePropertyListed(userId, user.getProperties_listed()+1);
             // Save the property entity to the database
             return pg;
         }

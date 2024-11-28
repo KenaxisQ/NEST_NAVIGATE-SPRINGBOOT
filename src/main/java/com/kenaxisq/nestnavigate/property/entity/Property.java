@@ -29,25 +29,25 @@ public class Property {
     private String type;
     @Column(nullable = false)
     private String propertyCategory;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String facing;
     @Column(nullable = false)
     private String propertyListingFor;
-    @Column(nullable = true)
-    private String projectName;
     @Column(nullable = false)
+    private String projectName;
+    @Column(nullable = true)
     private String furnitureStatus;
     @Column(nullable= true)
     private String furnitureStatusDescription;
     @Column(nullable = false)
     private String description;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Double super_builtup_area;
     @Column(nullable = true)
     private Double carpet_area;
     @Column(nullable = false)
     private Double price;
-    @Column(nullable = true)
+    @Column(nullable = false)
     private Double Advance;
     @Column(nullable = true)
     private Double length;
@@ -81,7 +81,7 @@ public class Property {
     @Column(nullable = false)
     private LocalDateTime expiryDate = listedDate.plus(30, ChronoUnit.DAYS);
     @Column(nullable = false)
-    private String listedby;
+    private String listedby ;
     @Column(nullable = false)
     private String primaryContact;
     @Column(nullable = true)
@@ -106,11 +106,11 @@ public class Property {
     private String latitude;
     @Column(nullable = true)
     private int views=0;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private int likes=0;
     @Column(nullable = true)
     private String Media;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime moveInDate;
 
     public void incrementViewsOfAProperty() {

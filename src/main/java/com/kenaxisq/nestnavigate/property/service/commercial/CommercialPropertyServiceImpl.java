@@ -42,7 +42,7 @@ public class CommercialPropertyServiceImpl implements CommercialPropertyService{
         try {
 //                Optional user = userRepository.findById(userId).get().(getProperties_listed()<1).orElseThrow()
             User user = userService.getUser(userId);
-            if (user.getProperties_listed() < 1) {
+            if (user.getProperties_listed() > 1) {
                 throw new ApiException(ErrorCodes.PROPERTY_LISTING_LIMIT_EXCEEDED);
             }
             List<String> missingFields = PropertyValidator.validateCommercialPropertyDto(commercialPropertyDto);
@@ -57,6 +57,7 @@ public class CommercialPropertyServiceImpl implements CommercialPropertyService{
             property.setOwner(user);
             property = propertyRepository.save(property);
             userService.updatePropertyListingLimit(userId, user.getProperties_listing_limit() - 1);
+            userService.updatePropertyListed(userId,user.getProperties_listed()+1);
             // Save the property entity to the database
             return property;
         }
