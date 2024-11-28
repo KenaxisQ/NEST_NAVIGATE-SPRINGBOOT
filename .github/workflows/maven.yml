@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted  # Runs the job on the latest Ubuntu 
+    runs-on: ubuntu-latest # Runs the job on the latest Ubuntu 
 
     steps:
       - uses: actions/checkout@v4  # Checkout code from the repository
