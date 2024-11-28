@@ -17,4 +17,5 @@ public interface UserService {
     public String deleteUser(String id);
     public User getUser(String id);
     public List<User> getUsers();
+    public void updatePropertyListingLimit(String userId, Integer limit);
 }

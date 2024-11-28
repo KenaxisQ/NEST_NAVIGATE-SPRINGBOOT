@@ -24,6 +24,7 @@ public enum ErrorCodes {
     INVALID_PASSWORD_FORMAT("USR_006", "Password does not meet security requirements", HttpStatus.BAD_REQUEST),
     ACCOUNT_INACTIVE("USR_007", "User account is inactive", HttpStatus.FORBIDDEN),
     USER_EMPTY("USR_TABLE_EMPTY", "There are no users currently present in the database.", HttpStatus.OK),
+    PROPERTY_LISTING_LIMIT_EXCEEDED("PROP_LIST_LIMIT_EXC", "Property listing limit exceeded", HttpStatus.BANDWIDTH_LIMIT_EXCEEDED),
 
     // Validation Errors (VAL_XXX)
     MISSING_REQUIRED_FIELD("VAL_001", "Required field is missing", HttpStatus.BAD_REQUEST),

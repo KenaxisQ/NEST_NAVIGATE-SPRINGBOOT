@@ -38,15 +38,13 @@ public class PropertyServiceImpl implements PropertyService{
     }
 
     @Override
-    public ResponseEntity<ApiResponse<Property>> getPropertyById(String id) {
+    public Property getPropertyById(String id) {
         try {
             Property property = propertyRepository.findPropertyById(id);
             if (property != null) {
-                return ResponseEntity.ok(ResponseBuilder.success(property, "Property fetched successfully"));
+                return property;
             } else {
-                throw new ApiException(ErrorCodes.ERR_PROPERTY_NOT_FOUND.getCode(),
-                        ErrorCodes.ERR_PROPERTY_NOT_FOUND.getMessage(),
-                        ErrorCodes.ERR_PROPERTY_NOT_FOUND.getHttpStatus());
+                throw new ApiException(ErrorCodes.ERR_PROPERTY_NOT_FOUND);
             }
         } catch (ApiException ex) {
             throw ex;
@@ -56,10 +54,8 @@ public class PropertyServiceImpl implements PropertyService{
                     ErrorCodes.INTERNAL_SERVER_ERROR.getHttpStatus());
         }
     }
-
-
     @Override
-    public ResponseEntity<?> getAllProperties() {
+    public List<Property> getAllProperties() {
         try {
             List<Property> properties = (List<Property>) propertyRepository.findAll();
 
@@ -69,20 +65,16 @@ public class PropertyServiceImpl implements PropertyService{
                         ErrorCodes.ERR_PROPERTY_NOT_FOUND.getHttpStatus());
             }
             logger.info("Properties fetched successfully: " + properties);
-            return ResponseEntity.ok(ResponseBuilder.success(properties, "Properties Fetched Successfully"));
+            return properties;
 
         } catch (ApiException ex) {
-            logger.error(String.format("Application error occurred: %s", ex.getMessage()));
-            ErrorResponse errorResponse = ResponseBuilder.error(ex.getStatus(), ex.getMessage(), ex.getErrorCode());
-            return ResponseEntity.status(ex.getStatus()).body(errorResponse);
+            logger.error(String.format("An unexpected error occurred while fetching properties: %s", ex.getMessage()));
+           throw ex;
         } catch (Exception ex) {
             logger.error(String.format("An unexpected error occurred while fetching properties: %s", ex.getMessage()));
-            ApiException apiException = new ApiException(ErrorCodes.INTERNAL_SERVER_ERROR.getCode(),
+            throw new ApiException(ErrorCodes.INTERNAL_SERVER_ERROR.getCode(),
                     "An error occurred while fetching properties: " + ex.getMessage(),
                     ErrorCodes.INTERNAL_SERVER_ERROR.getHttpStatus());
-
-            ErrorResponse errorResponse = ResponseBuilder.error(apiException.getStatus(), apiException.getMessage(), apiException.getErrorCode());
-            return ResponseEntity.status(apiException.getStatus()).body(errorResponse);
         }
     }
     public String deleteProperty(String id) {
@@ -327,4 +319,5 @@ public class PropertyServiceImpl implements PropertyService{
 
         return errors;
     }
-    }
+
+}

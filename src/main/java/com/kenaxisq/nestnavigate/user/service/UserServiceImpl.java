@@ -184,6 +184,14 @@ public class UserServiceImpl implements UserService{
         }
     }
 
+    @Override
+    public void updatePropertyListingLimit(String userId, Integer limit){
+        User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND));
+        user.setProperties_listed(limit);
+        userRepository.save(user);
+        logger.info("Property Listing Limit for User {} updated to: {}",user.getName(),user.getProperties_listing_limit());
+//            return String.format("Property Listing Limit for User %s updated to: %d",user.getName(),user.getProperties_listing_limit());
+    }
 
 
     private void updateNonNullFields(User source, User target) {

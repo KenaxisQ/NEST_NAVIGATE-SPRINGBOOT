@@ -27,21 +27,32 @@ public class PropertyController {
     public PropertyController(PropertyService propertyService) {
         this.propertyService = propertyService;
     }
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Property>> getPropertyDetails(@PathVariable String id){
-        return propertyService.getPropertyById(id);
-    }
+        @GetMapping("/{id}")
+        public ResponseEntity<ApiResponse<Property>> getPropertyDetails(@PathVariable String id){
+        return ResponseEntity.ok(ResponseBuilder.success(propertyService.getPropertyById(id),"Property Retrieved Successfully"));
+        }
+        @GetMapping
+        public ResponseEntity<ApiResponse<List<Property>>> getAllProperties(){
+        List<Property> properties = new ArrayList<>();
+        properties = propertyService.getAllProperties();
+        return ResponseEntity.ok(ResponseBuilder.success(properties,"Properties Retrieved Successfully"));
+        }
         @PostMapping("/create")
         public ResponseEntity<ApiResponse<Property>> createProperty (@RequestBody Property property,@RequestParam String userid) throws ApiException{
+        if(property.getPropertyCategory().equals("RESIDENTIAL"))
+        {
+
+        }
+
         propertyService.saveProperty(property ,userid);
         return ResponseEntity.ok(ResponseBuilder.success(property,"Property Created Successfully"));
 
         }
-        @PutMapping("/update")
-        public ResponseEntity<ApiResponse<Property>> updateProperty (@RequestBody Property property) throws ApiException{
-        Property propertyToUpdate = propertyService.updateProperty(property);
-        return ResponseEntity.ok(ResponseBuilder.success(propertyToUpdate,"Property Updated Successfully"));
-        }
+//        @PutMapping("/update")
+//        public ResponseEntity<ApiResponse<Property>> updateProperty (@RequestBody Property property) throws ApiException{
+//        Property propertyToUpdate = propertyService.updateProperty(property);
+//        return ResponseEntity.ok(ResponseBuilder.success(propertyToUpdate,"Property Updated Successfully"));
+//        }
 
         @DeleteMapping("/delete/{id}")
         public ResponseEntity<ApiResponse<String>> deleteProperty (@PathVariable String id) throws ApiException{

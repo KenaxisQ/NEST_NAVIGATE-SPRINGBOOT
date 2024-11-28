@@ -1,4 +1,4 @@
-package com.kenaxisq.nestnavigate.property.service;
+package com.kenaxisq.nestnavigate.property.service.residential;
 
 import com.kenaxisq.nestnavigate.property.dto.ResidentialPropertyDto;
 import com.kenaxisq.nestnavigate.property.entity.Property;
