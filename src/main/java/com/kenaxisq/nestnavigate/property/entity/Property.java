@@ -49,14 +49,20 @@ public class Property {
     private Double price;
     @Column(nullable = true)
     private Double Advance;
-    @Column
+    @Column(nullable = true)
     private Double length;
-    @Column
+    @Column(nullable = true)
     private Double width;
     @Column(nullable = true)
     private Integer poojaRoom;
     @Column(nullable = true)
     private Integer noOfBedrooms;
+    @Column(nullable = true)
+    private Integer noOfBathrooms;
+    @Column(nullable = true)
+    private Integer noOfRooms;
+    @Column(nullable = true)
+    private Integer noOfBalconies;
     @Column(nullable = false)
     private Boolean isNegotiable;
     @ManyToOne
@@ -78,7 +84,7 @@ public class Property {
     private String listedby;
     @Column(nullable = false)
     private String primaryContact;
-    @Column
+    @Column(nullable = true)
     private String secondaryContact;
     @Column(nullable = false)
     private String state ="Andhra Pradesh";
@@ -92,6 +98,8 @@ public class Property {
     private String village;
     @Column(nullable = false)
     private String zip;
+    @Column(nullable = false)
+    private String address;
     @Column(nullable = true)
     private String longitude;
     @Column(nullable = true)
@@ -100,7 +108,7 @@ public class Property {
     private int views=0;
     @Column(nullable = false)
     private int likes=0;
-    @Column
+    @Column(nullable = true)
     private String Media;
     @Column(nullable = false)
     private LocalDateTime moveInDate;

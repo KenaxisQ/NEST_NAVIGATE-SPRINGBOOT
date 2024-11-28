@@ -1,6 +1,8 @@
 package com.kenaxisq.nestnavigate.utils.property;
 
-public enum PropertyType {
+public enum PropertyCategory {
     RESIDENTIAL,
-    COMMERCIAL
+    COMMERCIAL,
+    LAND,
+    PG
 }

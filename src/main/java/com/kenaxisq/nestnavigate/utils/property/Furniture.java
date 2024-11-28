@@ -4,13 +4,13 @@ public enum Furniture {
     SEMI_FURNISHED,
     UNFURNISHED;
 
-    @Override
-    public String toString() {
-        switch(this) {
-            case FULLY_FURNISHED: return "Fully Furnished";
-            case SEMI_FURNISHED: return "Semi-Furnished";
-            case UNFURNISHED: return "Unfurnished";
-            default: throw new IllegalArgumentException();
-        }
-    }
+//    @Override
+//    public String toString() {
+//        switch(this) {
+//            case FULLY_FURNISHED: return "Fully Furnished";
+//            case SEMI_FURNISHED: return "Semi-Furnished";
+//            case UNFURNISHED: return "Unfurnished";
+//            default: throw new IllegalArgumentException();
+//        }
+//    }
 }
