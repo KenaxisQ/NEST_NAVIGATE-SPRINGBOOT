@@ -2,28 +2,29 @@ package com.kenaxisq.nestnavigate.property.service.pg;
 
 import com.kenaxisq.nestnavigate.custom_exceptions.ApiException;
 import com.kenaxisq.nestnavigate.custom_exceptions.ErrorCodes;
-import com.kenaxisq.nestnavigate.property.dto.LandDto;
-import com.kenaxisq.nestnavigate.property.dto.PGDto;
 import com.kenaxisq.nestnavigate.property.entity.Property;
 import com.kenaxisq.nestnavigate.property.repository.PropertyRepository;
 import com.kenaxisq.nestnavigate.property.service.PropertyService;
-import com.kenaxisq.nestnavigate.property.service.land.LandServiceImpl;
 import com.kenaxisq.nestnavigate.property.validators.PropertyValidator;
 import com.kenaxisq.nestnavigate.user.entity.User;
 import com.kenaxisq.nestnavigate.user.service.UserService;
 import com.kenaxisq.nestnavigate.utils.UserRole;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.StringUtils;
-
+import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Service
 public class PGServiceImpl implements PGService{
 
     private final PropertyRepository propertyRepository;
     private final UserService userService;
     private final PropertyService propertyService;
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LandServiceImpl.class);
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(PGServiceImpl.class);
+
+    @Autowired
     public PGServiceImpl(PropertyRepository propertyRepository,
                          UserService userService,
                          PropertyService propertyService) {
@@ -33,27 +34,24 @@ public class PGServiceImpl implements PGService{
     }
 
     @Override
-    public Property postPgProperty(PGDto pgDto, String userId) {
+    public Property postPgProperty(Property pg, String userId) {
         try {
-//                Optional user = userRepository.findById(userId).get().(getProperties_listed()<1).orElseThrow()
             User user = userService.getUser(userId);
             if (user.getProperties_listed() < 1) {
                 throw new ApiException(ErrorCodes.PROPERTY_LISTING_LIMIT_EXCEEDED);
             }
-            List<String> missingFields = PropertyValidator.validatePgDto(pgDto);
+            List<String> missingFields = PropertyValidator.validatePg(pg);
             if (!missingFields.isEmpty()) {
                 logger.error("Missing required fields: " + String.join(", ", missingFields));
                 throw new ApiException(ErrorCodes.MISSING_REQUIRED_FIELD.getCode(),
                         "Missing required fields: " + String.join(", ", missingFields),
                         ErrorCodes.MISSING_REQUIRED_FIELD.getHttpStatus());
             }
-            Property property = mapDtoToEntity(pgDto);
-
-            property.setOwner(user);
-            property = propertyRepository.save(property);
+            pg.setOwner(user);
+            pg = propertyRepository.save(pg);
             userService.updatePropertyListingLimit(userId, user.getProperties_listing_limit() - 1);
             // Save the property entity to the database
-            return property;
+            return pg;
         }
         catch (ApiException ex){
             throw ex;
@@ -64,7 +62,7 @@ public class PGServiceImpl implements PGService{
     }
 
     @Override
-    public Property updatePgProperty(PGDto pgDto, String userId, String propertyId) {
+    public Property updatePgProperty(Property pg, String userId, String propertyId) {
         try {
             // Check if the property exists
             Property existingProperty = propertyService.getPropertyById(propertyId);
@@ -80,37 +78,37 @@ public class PGServiceImpl implements PGService{
             }
 
             // Update only the fields that are present in the DTO
-            if (pgDto.getTitle() != null)
-                existingProperty.setTitle(pgDto.getTitle());
-            if (pgDto.getType() != null) existingProperty.setType(pgDto.getType());
-            if (pgDto.getPropertyCategory() != null)
-                existingProperty.setPropertyCategory(pgDto.getPropertyCategory().name());
-            if (pgDto.getProjectName() != null)
-                existingProperty.setProjectName(pgDto.getProjectName());
-            if (pgDto.getFurnitureStatus() != null)
-                existingProperty.setFurnitureStatus(pgDto.getFurnitureStatus().name());
-            if (pgDto.getFurnitureStatusDescription() != null)
-                existingProperty.setFurnitureStatusDescription(pgDto.getFurnitureStatusDescription());
-            if (pgDto.getDescription() != null)
-                existingProperty.setDescription(pgDto.getDescription());
-            if (pgDto.getPrice() != null)
-                existingProperty.setPrice(pgDto.getPrice());
-            if (pgDto.getAdvance() != null)
-                existingProperty.setAdvance(pgDto.getAdvance());
-            if (pgDto.getIsNegotiable() != null)
-                existingProperty.setIsNegotiable(pgDto.getIsNegotiable());
-            if (pgDto.getPrimaryContact() != null)
-                existingProperty.setPrimaryContact(pgDto.getPrimaryContact());
-            if (pgDto.getSecondaryContact() != null)
-                existingProperty.setSecondaryContact(pgDto.getSecondaryContact());
-            if (pgDto.getMandal() != null)
-                existingProperty.setMandal(pgDto.getMandal());
-            if (pgDto.getVillage() != null)
-                existingProperty.setVillage(pgDto.getVillage());
-            if (pgDto.getZip() != null) existingProperty.setZip(pgDto.getZip());
-            if (pgDto.getAddress() != null) existingProperty.setAddress(pgDto.getAddress());
-            if (pgDto.getMedia() != null)
-                existingProperty.setMedia(pgDto.getMedia());
+            if (pg.getTitle() != null)
+                existingProperty.setTitle(pg.getTitle());
+            if (pg.getType() != null) existingProperty.setType(pg.getType());
+            if (pg.getPropertyCategory() != null)
+                existingProperty.setPropertyCategory(pg.getPropertyCategory());
+            if (pg.getProjectName() != null)
+                existingProperty.setProjectName(pg.getProjectName());
+            if (pg.getFurnitureStatus() != null)
+                existingProperty.setFurnitureStatus(pg.getFurnitureStatus());
+            if (pg.getFurnitureStatusDescription() != null)
+                existingProperty.setFurnitureStatusDescription(pg.getFurnitureStatusDescription());
+            if (pg.getDescription() != null)
+                existingProperty.setDescription(pg.getDescription());
+            if (pg.getPrice() != null)
+                existingProperty.setPrice(pg.getPrice());
+            if (pg.getAdvance() != null)
+                existingProperty.setAdvance(pg.getAdvance());
+            if (pg.getIsNegotiable() != null)
+                existingProperty.setIsNegotiable(pg.getIsNegotiable());
+            if (pg.getPrimaryContact() != null)
+                existingProperty.setPrimaryContact(pg.getPrimaryContact());
+            if (pg.getSecondaryContact() != null)
+                existingProperty.setSecondaryContact(pg.getSecondaryContact());
+            if (pg.getMandal() != null)
+                existingProperty.setMandal(pg.getMandal());
+            if (pg.getVillage() != null)
+                existingProperty.setVillage(pg.getVillage());
+            if (pg.getZip() != null) existingProperty.setZip(pg.getZip());
+            if (pg.getAddress() != null) existingProperty.setAddress(pg.getAddress());
+            if (pg.getMedia() != null)
+                existingProperty.setMedia(pg.getMedia());
 
             // Set the updated date
             existingProperty.setUpdatedDate(LocalDateTime.now());
@@ -124,26 +122,4 @@ public class PGServiceImpl implements PGService{
             throw new ApiException("ERR_PRPTY_LSTNG",ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    public Property mapDtoToEntity(PGDto dto) {
-        Property property = new Property();
-        property.setTitle(dto.getTitle());
-        property.setType(dto.getType());
-        property.setPropertyCategory(dto.getPropertyCategory().name());
-        property.setPropertyListingFor(dto.getPropertyListingFor().name());
-        property.setProjectName(dto.getProjectName());
-        property.setDescription(dto.getDescription());
-        property.setPrice(dto.getPrice());
-        property.setAdvance(dto.getAdvance());
-        property.setIsNegotiable(dto.getIsNegotiable());
-        property.setPrimaryContact(dto.getPrimaryContact());
-        if (StringUtils.hasText(dto.getSecondaryContact())) property.setSecondaryContact(dto.getSecondaryContact());
-        property.setMandal(dto.getMandal());
-        property.setVillage(dto.getVillage());
-        property.setZip(dto.getZip());
-        property.setMedia(dto.getMedia());
-        property.setAddress(dto.getAddress());
-        return property;
-    }
-
 }

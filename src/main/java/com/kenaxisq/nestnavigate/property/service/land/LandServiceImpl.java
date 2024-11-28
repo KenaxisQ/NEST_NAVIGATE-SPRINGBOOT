@@ -2,7 +2,6 @@ package com.kenaxisq.nestnavigate.property.service.land;
 
 import com.kenaxisq.nestnavigate.custom_exceptions.ApiException;
 import com.kenaxisq.nestnavigate.custom_exceptions.ErrorCodes;
-import com.kenaxisq.nestnavigate.property.dto.LandDto;
 import com.kenaxisq.nestnavigate.property.entity.Property;
 import com.kenaxisq.nestnavigate.property.repository.PropertyRepository;
 import com.kenaxisq.nestnavigate.property.service.PropertyService;
@@ -12,7 +11,6 @@ import com.kenaxisq.nestnavigate.user.service.UserService;
 import com.kenaxisq.nestnavigate.utils.UserRole;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,24 +32,22 @@ public class LandServiceImpl implements LandService{
 
 
     @Override
-    public Property postLandProperty(LandDto landDto, String userId) {
+    public Property postLandProperty(Property land, String userId) {
         try {
-//                Optional user = userRepository.findById(userId).get().(getProperties_listed()<1).orElseThrow()
             User user = userService.getUser(userId);
             if (user.getProperties_listed() < 1) {
                 throw new ApiException(ErrorCodes.PROPERTY_LISTING_LIMIT_EXCEEDED);
             }
-            List<String> missingFields = PropertyValidator.validateLandDto(landDto);
+            List<String> missingFields = PropertyValidator.validateLand(land);
             if (!missingFields.isEmpty()) {
                 logger.error("Missing required fields: " + String.join(", ", missingFields));
                 throw new ApiException(ErrorCodes.MISSING_REQUIRED_FIELD.getCode(),
                         "Missing required fields: " + String.join(", ", missingFields),
                         ErrorCodes.MISSING_REQUIRED_FIELD.getHttpStatus());
             }
-            Property property = mapDtoToEntity(landDto);
-
-            property.setOwner(user);
-            property = propertyRepository.save(property);
+            land.setOwner(user);
+            Property property = new Property();
+            property = propertyRepository.save(land);
             userService.updatePropertyListingLimit(userId, user.getProperties_listing_limit() - 1);
             // Save the property entity to the database
             return property;
@@ -65,7 +61,7 @@ public class LandServiceImpl implements LandService{
     }
 
     @Override
-    public Property updateLandProperty(LandDto landDto, String userId, String propertyId) {
+    public Property updateLandProperty(Property land, String userId, String propertyId) {
         try {
             // Check if the property exists
             Property existingProperty = propertyService.getPropertyById(propertyId);
@@ -81,44 +77,44 @@ public class LandServiceImpl implements LandService{
             }
 
             // Update only the fields that are present in the DTO
-            if (landDto.getTitle() != null)
-                existingProperty.setTitle(landDto.getTitle());
-            if (landDto.getType() != null) existingProperty.setType(landDto.getType());
-            if (landDto.getPropertyCategory() != null)
-                existingProperty.setPropertyCategory(landDto.getPropertyCategory().name());
-            if (landDto.getFacing() != null)
-                existingProperty.setFacing(landDto.getFacing().name());
-            if (landDto.getPropertyListingFor() != null)
-                existingProperty.setPropertyListingFor(landDto.getPropertyListingFor().name());
-            if (landDto.getProjectName() != null)
-                existingProperty.setProjectName(landDto.getProjectName());
-            if (landDto.getDescription() != null)
-                existingProperty.setDescription(landDto.getDescription());
-            if (landDto.getSuperBuiltUpArea() != null)
-                existingProperty.setSuper_builtup_area(landDto.getSuperBuiltUpArea());
-            if (landDto.getPrice() != null)
-                existingProperty.setPrice(landDto.getPrice());
-            if (landDto.getAdvance() != null)
-                existingProperty.setAdvance(landDto.getAdvance());
-            if (landDto.getLength() != null)
-                existingProperty.setLength(landDto.getLength());
-            if (landDto.getWidth() != null)
-                existingProperty.setWidth(landDto.getWidth());
-            if (landDto.getIsNegotiable() != null)
-                existingProperty.setIsNegotiable(landDto.getIsNegotiable());
-            if (landDto.getPrimaryContact() != null)
-                existingProperty.setPrimaryContact(landDto.getPrimaryContact());
-            if (landDto.getSecondaryContact() != null)
-                existingProperty.setSecondaryContact(landDto.getSecondaryContact());
-            if (landDto.getMandal() != null)
-                existingProperty.setMandal(landDto.getMandal());
-            if (landDto.getVillage() != null)
-                existingProperty.setVillage(landDto.getVillage());
-            if (landDto.getZip() != null) existingProperty.setZip(landDto.getZip());
-            if (landDto.getMedia() != null)
-                existingProperty.setMedia(landDto.getMedia());
-            if (landDto.getAddress() != null)
-                existingProperty.setAddress(landDto.getAddress());
+            if (land.getTitle() != null)
+                existingProperty.setTitle(land.getTitle());
+            if (land.getType() != null) existingProperty.setType(land.getType());
+            if (land.getPropertyCategory() != null)
+                existingProperty.setPropertyCategory(land.getPropertyCategory());
+            if (land.getFacing() != null)
+                existingProperty.setFacing(land.getFacing());
+            if (land.getPropertyListingFor() != null)
+                existingProperty.setPropertyListingFor(land.getPropertyListingFor());
+            if (land.getProjectName() != null)
+                existingProperty.setProjectName(land.getProjectName());
+            if (land.getDescription() != null)
+                existingProperty.setDescription(land.getDescription());
+            if (land.getSuper_builtup_area() != null)
+                existingProperty.setSuper_builtup_area(land.getSuper_builtup_area());
+            if (land.getPrice() != null)
+                existingProperty.setPrice(land.getPrice());
+            if (land.getAdvance() != null)
+                existingProperty.setAdvance(land.getAdvance());
+            if (land.getLength() != null)
+                existingProperty.setLength(land.getLength());
+            if (land.getWidth() != null)
+                existingProperty.setWidth(land.getWidth());
+            if (land.getIsNegotiable() != null)
+                existingProperty.setIsNegotiable(land.getIsNegotiable());
+            if (land.getPrimaryContact() != null)
+                existingProperty.setPrimaryContact(land.getPrimaryContact());
+            if (land.getSecondaryContact() != null)
+                existingProperty.setSecondaryContact(land.getSecondaryContact());
+            if (land.getMandal() != null)
+                existingProperty.setMandal(land.getMandal());
+            if (land.getVillage() != null)
+                existingProperty.setVillage(land.getVillage());
+            if (land.getZip() != null) existingProperty.setZip(land.getZip());
+            if (land.getMedia() != null)
+                existingProperty.setMedia(land.getMedia());
+            if (land.getAddress() != null)
+                existingProperty.setAddress(land.getAddress());
             // Set the updated date
             existingProperty.setUpdatedDate(LocalDateTime.now());
 
@@ -132,28 +128,4 @@ public class LandServiceImpl implements LandService{
         }
     }
 
-    public Property mapDtoToEntity(LandDto dto) {
-        Property property = new Property();
-        property.setTitle(dto.getTitle());
-        property.setType(dto.getType());
-        property.setPropertyCategory(dto.getPropertyCategory().name());
-        property.setFacing(dto.getFacing().name());
-        property.setPropertyListingFor(dto.getPropertyListingFor().name());
-        property.setProjectName(dto.getProjectName());
-        property.setDescription(dto.getDescription());
-        property.setSuper_builtup_area(dto.getSuperBuiltUpArea());
-        property.setPrice(dto.getPrice());
-        property.setAdvance(dto.getAdvance());
-        property.setLength(dto.getLength());
-        property.setWidth(dto.getWidth());
-        property.setIsNegotiable(dto.getIsNegotiable());
-        property.setPrimaryContact(dto.getPrimaryContact());
-        if (StringUtils.hasText(dto.getSecondaryContact())) property.setSecondaryContact(dto.getSecondaryContact());
-        property.setMandal(dto.getMandal());
-        property.setVillage(dto.getVillage());
-        property.setZip(dto.getZip());
-        property.setMedia(dto.getMedia());
-        property.setAddress(dto.getAddress());
-        return property;
-    }
 }

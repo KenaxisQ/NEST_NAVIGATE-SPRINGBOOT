@@ -3,6 +3,10 @@ package com.kenaxisq.nestnavigate.property.controller;
 import com.kenaxisq.nestnavigate.custom_exceptions.ApiException;
 import com.kenaxisq.nestnavigate.property.entity.Property;
 import com.kenaxisq.nestnavigate.property.service.PropertyService;
+import com.kenaxisq.nestnavigate.property.service.land.LandService;
+import com.kenaxisq.nestnavigate.property.service.pg.PGService;
+import com.kenaxisq.nestnavigate.property.service.pg.PGServiceImpl;
+import com.kenaxisq.nestnavigate.property.validators.PropertyValidator;
 import com.kenaxisq.nestnavigate.utils.ApiResponse;
 import com.kenaxisq.nestnavigate.utils.ResponseBuilder;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -22,10 +26,16 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 public class PropertyController {
     private final PropertyService propertyService;
+    private final PGService pgService;
+    private final LandService landService;
 
     @Autowired
-    public PropertyController(PropertyService propertyService) {
+    public PropertyController(PropertyService propertyService,
+                              PGService pgService,
+                              LandService landService) {
         this.propertyService = propertyService;
+        this.pgService = pgService;
+        this.landService = landService;
     }
         @GetMapping("/{id}")
         public ResponseEntity<ApiResponse<Property>> getPropertyDetails(@PathVariable String id){
@@ -39,13 +49,26 @@ public class PropertyController {
         }
         @PostMapping("/create")
         public ResponseEntity<ApiResponse<Property>> createProperty (@RequestBody Property property,@RequestParam String userid) throws ApiException{
-        if(property.getPropertyCategory().equals("RESIDENTIAL"))
+        Property propertyToBePosted = new Property();
+        if(property.getPropertyCategory().equals("PG"))
         {
+            PropertyValidator.validatePg(property);
+           propertyToBePosted= pgService.postPgProperty(property,userid);
 
         }
+            if(property.getPropertyCategory().equals("LAND"))
+            {
+                PropertyValidator.validateLand(property);
+               propertyToBePosted = landService.postLandProperty(property,userid);
 
-        propertyService.saveProperty(property ,userid);
-        return ResponseEntity.ok(ResponseBuilder.success(property,"Property Created Successfully"));
+            }
+            else
+            {
+                return ResponseEntity.ok(ResponseBuilder.success(null,"Property Other than PG, LAND are yet to be implemented"));
+            }
+
+//        propertyService.saveProperty(property ,userid);
+        return ResponseEntity.ok(ResponseBuilder.success(propertyToBePosted,"Property Created Successfully"));
 
         }
 //        @PutMapping("/update")
