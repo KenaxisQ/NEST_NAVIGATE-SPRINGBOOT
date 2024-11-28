@@ -40,4 +40,4 @@ jobs:
           Invoke-WebRequest -Uri "http://103.127.31.155:8080/manager/text/deploy?path=/nestNavigator-0.0.1-SNAPSHOT&update=true" `
                   -Credential (New-Object PSCredential("root", (ConvertTo-SecureString "root" -AsPlainText -Force))) `
                   -Method Put `
-                  -InFile "target/nestNavigator-0.0.1-SNAPSHOT.war"
+                  -InFile "target/nestNavigate-0.0.1-SNAPSHOT.war"
