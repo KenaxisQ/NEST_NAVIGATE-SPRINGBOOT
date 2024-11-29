@@ -2,11 +2,27 @@ name: Java CI pipeline
 
 on:
   push:
-    branches: [ "temp" ]  # Trigger pipeline on push to "Dev" branch and "Siddu" branch
+    branches: [ "temp" ]  # Trigger pipeline on push to "temp" branch
 
 jobs:
   build:
     runs-on: ubuntu-latest # Runs the job on the latest Ubuntu 
+
+    # Define environment variables at the job level
+    env:
+      SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+      SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+      SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+      SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
+      SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
+      SPRING_MAIL_USERNAME: ${{ secrets.SPRING_MAIL_USERNAME }}
+      SPRING_MAIL_PASSWORD: ${{ secrets.SPRING_MAIL_PASSWORD }}
+      SECURITY_JWT_SECRET_KEY: ${{ secrets.SECURITY_JWT_SECRET_KEY }}
+      SECURITY_JWT_EXPIRATION_TIME: ${{ secrets.SECURITY_JWT_EXPIRATION_TIME }}
+      SECURITY_JWT_REFRESH_TOKEN_EXPIRATION: ${{ secrets.SECURITY_JWT_REFRESH_TOKEN_EXPIRATION }}
+      SPRING_SECURITY_USER_NAME: ${{ secrets.SPRING_SECURITY_USER_NAME }}
+      SPRING_SECURITY_USER_PASSWORD: ${{ secrets.SPRING_SECURITY_USER_PASSWORD }}
+      TOMCAT_PASSWORD: ${{ secrets.TOMCAT_PASSWORD }}
 
     steps:
       - uses: actions/checkout@v4  # Checkout code from the repository
@@ -30,23 +46,9 @@ jobs:
 
       - name: Deploy WAR to Local Tomcat
         if: success()  # Only execute if the artifact was uploaded successfully
-        env:
-          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-          SPRING_MAIL_HOST: ${{secrets.SPRING_MAIL_HOST}}
-          SPRING_MAIL_PORT: ${{secrets.SPRING_MAIL_PORT}}
-          SPRING_MAIL_USERNAME: ${{secrets.SPRING_MAIL_USERNAME}}
-          SPRING_MAIL_PASSWORD: ${{secrets.SPRING_MAIL_PASSWORD}}
-          SECURITY_JWT_SECRET_KEY: ${{secrets.SECURITY_JWT_SECRET_KEY}}
-          SECURITY_JWT_EXPIRATION_TIME: ${{secrets.SECURITY_JWT_EXPIRATION_TIME}}
-          SECURITY_JWT_REFRESH_TOKEN_EXPIRATION: ${{secrets.SECURITY_JWT_REFRESH_TOKEN_EXPIRATION}}
-          SPRING_SECURITY_USER_NAME: ${{secrets.SPRING_SECURITY_USER_NAME}}
-          SPRING_SECURITY_USER_PASSWORD: ${{secrets.SPRING_SECURITY_USER_PASSWORD}}
         run: |
-         # Deploy the WAR file using curl
           echo "spring.datasource.url=${{ secrets.SPRING_DATASOURCE_URL }}" >> src/main/resources/application.properties
-          Invoke-WebRequest -Uri "http://103.127.31.155:8080/manager/text/deploy?path=/nestNavigate-0.0.1-SNAPSHOT&update=true" `
-                  -Credential (New-Object PSCredential("root", (ConvertTo-SecureString "root" -AsPlainText -Force))) `
-                  -Method Put `
-                  -InFile "target/nestNavigate-0.0.1-SNAPSHOT.war"
+          # Deploy the WAR file using curl
+          curl -u root:${{ secrets.TOMCAT_PASSWORD }} \
+            -T target/nestNavigate-0.0.1-SNAPSHOT.war \
+            "http://103.127.31.155:8080/manager/text/deploy?path=/nestNavigate-0.0.1-SNAPSHOT&update=true"
