@@ -1,6 +1,8 @@
 package com.kenaxisq.nestnavigate.property.validators;
 
 import com.kenaxisq.nestnavigate.property.dto.CommercialPropertyDto;
+import com.kenaxisq.nestnavigate.property.dto.PgDto;
+import com.kenaxisq.nestnavigate.property.dto.PropertyDto;
 import com.kenaxisq.nestnavigate.property.dto.ResidentialPropertyDto;
 import com.kenaxisq.nestnavigate.property.entity.Property;
 import com.kenaxisq.nestnavigate.utils.property.*;
@@ -141,7 +143,7 @@ public class PropertyValidator {
         }
         return missingFields;
     }
-    public static List<String> validatePg(Property pg) {
+    public static List<String> validatePg(PgDto pg) {
         List<String> missingFields = new ArrayList<>();
         if (!StringUtils.hasText(pg.getTitle())) { missingFields.add("title"); }
         if (!StringUtils.hasText(pg.getType())) { missingFields.add("type"); }
@@ -160,13 +162,13 @@ public class PropertyValidator {
         if (!StringUtils.hasText(pg.getZip())) { missingFields.add("address"); }
         if (!StringUtils.hasText(pg.getMedia())) { missingFields.add("media"); }
         // Check for valid enum values
-        if (pg.getPropertyCategory() != null && !isValidEnumValue(PropertyCategory.class, pg.getPropertyCategory())) {
+        if (pg.getPropertyCategory() != null && !isValidEnumValue(PropertyCategory.class, pg.getPropertyCategory().name())) {
             missingFields.add("propertyCategory (invalid value)");
         }
-        if (pg.getStatus() != null && !isValidEnumValue(PropertyStatus.class, pg.getStatus())) {
+        if (pg.getStatus() != null && !isValidEnumValue(PropertyStatus.class, pg.getStatus().name())) {
             missingFields.add("status (invalid value)");
         }
-        if (pg.getPropertyListingFor()!= null && !isValidEnumValue(PropertyListingType.class, pg.getPropertyListingFor())&& pg.getPropertyListingFor() != PropertyListingType.RENT.name()) {
+        if (pg.getPropertyListingFor()!= null && !isValidEnumValue(PropertyListingType.class, pg.getPropertyListingFor().name())&& pg.getPropertyListingFor() != PropertyListingType.RENT) {
             missingFields.add("Property Listed For (invalid value)");
         }
         return missingFields;

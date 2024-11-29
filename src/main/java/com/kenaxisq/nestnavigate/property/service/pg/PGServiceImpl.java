@@ -2,6 +2,7 @@ package com.kenaxisq.nestnavigate.property.service.pg;
 
 import com.kenaxisq.nestnavigate.custom_exceptions.ApiException;
 import com.kenaxisq.nestnavigate.custom_exceptions.ErrorCodes;
+import com.kenaxisq.nestnavigate.property.dto.PgDto;
 import com.kenaxisq.nestnavigate.property.entity.Property;
 import com.kenaxisq.nestnavigate.property.repository.PropertyRepository;
 import com.kenaxisq.nestnavigate.property.service.PropertyService;
@@ -13,6 +14,8 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -34,7 +37,7 @@ public class PGServiceImpl implements PGService{
     }
 
     @Override
-    public Property postPgProperty(Property pg, String userId) {
+    public Property postPgProperty(PgDto pg, String userId) {
         try {
             User user = userService.getUser(userId);
             if (user.getProperties_listed() > 1) {
@@ -47,12 +50,14 @@ public class PGServiceImpl implements PGService{
                         "Missing required fields: " + String.join(", ", missingFields),
                         ErrorCodes.MISSING_REQUIRED_FIELD.getHttpStatus());
             }
-            pg.setOwner(user);
-            pg = propertyRepository.save(pg);
+            Property property = mapDtoToEntity(pg);
+
+            property.setOwner(user);
+            property = propertyRepository.save(property);
             userService.updatePropertyListingLimit(userId, user.getProperties_listing_limit() - 1);
             userService.updatePropertyListed(userId, user.getProperties_listed()+1);
             // Save the property entity to the database
-            return pg;
+            return property;
         }
         catch (ApiException ex){
             throw ex;
@@ -122,5 +127,26 @@ public class PGServiceImpl implements PGService{
         } catch (Exception ex){
             throw new ApiException("ERR_PRPTY_LSTNG",ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public Property mapDtoToEntity(PgDto dto) {
+        Property property = new Property();
+        property.setTitle(dto.getTitle());
+        property.setType(dto.getType());
+        property.setPropertyCategory(dto.getPropertyCategory().name());
+        property.setPropertyListingFor(dto.getPropertyListingFor().name());
+        property.setProjectName(dto.getProjectName());
+        property.setDescription(dto.getDescription());
+        property.setPrice(dto.getPrice());
+        property.setAdvance(dto.getAdvance());
+        property.setIsNegotiable(dto.getIsNegotiable());
+        property.setPrimaryContact(dto.getPrimaryContact());
+        if (StringUtils.hasText(dto.getSecondaryContact())) property.setSecondaryContact(dto.getSecondaryContact());
+        property.setMandal(dto.getMandal());
+        property.setVillage(dto.getVillage());
+        property.setZip(dto.getZip());
+        property.setMedia(dto.getMedia());
+        property.setAddress(dto.getAddress());
+        return property;
     }
 }

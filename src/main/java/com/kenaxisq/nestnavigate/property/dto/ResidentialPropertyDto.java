@@ -12,20 +12,13 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResidentialPropertyDto {
-    private String title;
-    private String type;
-    private final PropertyCategory propertyCategory = PropertyCategory.RESIDENTIAL;
+public class ResidentialPropertyDto extends PropertyDto {
+
     private Directions facing;
-    private PropertyListingType propertyListingFor;
-    private String projectName;
     private Furniture furnitureStatus;
     private String furnitureStatusDescription;
-    private String description;
     private Double superBuiltUpArea;
     private Double carpetArea;
-    private Double price;
-    private Double advance;
     private Double length;
     private Double width;
     private Integer poojaRoom;
@@ -33,17 +26,5 @@ public class ResidentialPropertyDto {
     private Integer noOfBathrooms;
     private Integer noOfRooms;
     private Integer noOfBalconies;
-    private Boolean isNegotiable;
-    private User owner;
-    private PropertyStatus status;
-    private Boolean isFeatured = false;
-    private LocalDateTime updatedDate = LocalDateTime.now();
-    private String primaryContact;
-    private String secondaryContact;
-    private String mandal;
-    private String village;
-    private String zip;
-    private String address;
-    private String media;
     private LocalDateTime moveInDate;
 }

@@ -1,6 +1,8 @@
 package com.kenaxisq.nestnavigate.property.controller;
 
 import com.kenaxisq.nestnavigate.custom_exceptions.ApiException;
+import com.kenaxisq.nestnavigate.property.dto.PgDto;
+import com.kenaxisq.nestnavigate.property.dto.PropertyDto;
 import com.kenaxisq.nestnavigate.property.entity.Property;
 import com.kenaxisq.nestnavigate.property.service.PropertyService;
 import com.kenaxisq.nestnavigate.property.service.land.LandService;
@@ -52,19 +54,19 @@ public class PropertyController {
         return ResponseEntity.ok(ResponseBuilder.success(properties,"Properties Retrieved Successfully"));
         }
         @PostMapping("/create")
-        public ResponseEntity<ApiResponse<Property>> createProperty (@RequestBody Property property,@RequestParam String userId) throws ApiException{
-        Property propertyToBePosted = new Property();
+        public ResponseEntity<ApiResponse<Property>> createProperty (@RequestBody PropertyDto propertydto, @RequestParam String userId) throws ApiException{
+        Property property = new Property();
         property.setListedby(userService.getUser(userId).getAuthorities().toString());
         if(property.getPropertyCategory().equals("PG"))
         {
-            PropertyValidator.validatePg(property);
-           propertyToBePosted= pgService.postPgProperty(property,userId);
+            PropertyValidator.validatePg((PgDto) propertydto);
+           property= pgService.postPgProperty((PgDto) propertydto,userId);
 
         }
         if(property.getPropertyCategory().equals("LAND"))
         {
                 PropertyValidator.validateLand(property);
-               propertyToBePosted = landService.postLandProperty(property,userId);
+               property = landService.postLandProperty(property,userId);
 
         }
         if(!property.getPropertyCategory().equals("LAND")||!property.getPropertyCategory().equals("PG"))
@@ -73,7 +75,7 @@ public class PropertyController {
             }
 
 //        propertyService.saveProperty(property ,userid);
-        return ResponseEntity.ok(ResponseBuilder.success(propertyToBePosted,"Property Created Successfully"));
+        return ResponseEntity.ok(ResponseBuilder.success(property,"Property Created Successfully"));
 
         }
 //        @PutMapping("/update")

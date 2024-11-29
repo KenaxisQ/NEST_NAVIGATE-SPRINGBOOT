@@ -9,14 +9,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class CommercialPropertyDto extends PropertyDto
-{
-    private Directions facing;
+public class PgDto extends PropertyDto{
     private Furniture furnitureStatus;
     private String furnitureStatusDescription;
-    private Double superBuiltUpArea;
-    private Double carpetArea;
-    private Double length;
-    private Double width;
-    private LocalDateTime moveInDate;
 }
