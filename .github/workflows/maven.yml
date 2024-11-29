@@ -2,7 +2,7 @@ name: Java CI pipeline
 
 on:
   push:
-    branches: [ "main" ]  # Trigger pipeline on push to "Dev" branch and "Siddu" branch
+    branches: [ "temp" ]  # Trigger pipeline on push to "Dev" branch and "Siddu" branch
 
 jobs:
   build:
@@ -30,11 +30,19 @@ jobs:
 
       - name: Deploy WAR to Local Tomcat
         if: success()  # Only execute if the artifact was uploaded successfully
-        # env:
-        #   TOMCAT_HOST: ${{ secrets.TOMCAT_HOST }}  # The host of your Tomcat server (should be in your GitHub Secrets)
-        #   TOMCAT_USER: ${{ secrets.TOMCAT_USER }}  # The username for Tomcat HTTP Basic Authentication (should be in your GitHub Secrets)
-        #   TOMCAT_PASS: ${{ secrets.TOMCAT_PASS }}  # The password for Tomcat HTTP Basic Authentication (should be in your GitHub Secrets)
-          # WAR_PATH: target/nestNavigate.war  # Path to the WAR file
+        env:
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          SPRING_MAIL_HOST: ${{secrets.SPRING_MAIL_HOST}}
+          SPRING_MAIL_PORT: ${{secrets.SPRING_MAIL_PORT}}
+          SPRING_MAIL_USERNAME: ${{secrets.SPRING_MAIL_USERNAME}}
+          SPRING_MAIL_PASSWORD: ${{secrets.SPRING_MAIL_PASSWORD}}
+          SECURITY_JWT_SECRET_KEY: ${{secrets.SECURITY_JWT_SECRET_KEY}}
+          SECURITY_JWT_EXPIRATION_TIME: ${{secrets.SECURITY_JWT_EXPIRATION_TIME}}
+          SECURITY_JWT_REFRESH_TOKEN_EXPIRATION: ${{secrets.SECURITY_JWT_REFRESH_TOKEN_EXPIRATION}}
+          SPRING_SECURITY_USER_NAME: ${{secrets.SPRING_SECURITY_USER_NAME}}
+          SPRING_SECURITY_USER_PASSWORD: ${{secrets.SPRING_SECURITY_USER_PASSWORD}}
         run: |
          # Deploy the WAR file using curl
           Invoke-WebRequest -Uri "http://103.127.31.155:8080/manager/text/deploy?path=/nestNavigate-0.0.1-SNAPSHOT&update=true" `
