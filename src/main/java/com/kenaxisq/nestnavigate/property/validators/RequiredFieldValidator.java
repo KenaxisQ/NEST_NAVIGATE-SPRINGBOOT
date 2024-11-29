@@ -1,7 +1,8 @@
 package com.kenaxisq.nestnavigate.property.validators;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+
 import java.lang.reflect.Field;
 
 public class RequiredFieldValidator implements ConstraintValidator<RequiredField, Object> {

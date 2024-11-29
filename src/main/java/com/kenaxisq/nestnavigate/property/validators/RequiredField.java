@@ -1,18 +1,20 @@
 package com.kenaxisq.nestnavigate.property.validators;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.FIELD})
-@Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = RequiredFieldValidator.class) // Link to the custom validator
+@Target({ElementType.FIELD}) // Defines where the annotation can be applied
+@Retention(RetentionPolicy.RUNTIME) // The annotation will be available at runtime
+@Constraint(validatedBy = RequiredFieldValidator.class) // Specifies the validator that will handle this constraint
 public @interface RequiredField {
-    String message() default "This field is required"; // Default error message
-    Class<?>[] groups() default {}; // Grouping for validation (optional)
-    Class<? extends Payload>[] payload() default {}; // Custom data for the annotation (optional)
-}
+    String message() default "This field is required"; // Provides a default error message
 
+    Class<?>[] groups() default {}; // Allows categorization of the constraint
+
+    Class<? extends Payload>[] payload() default {}; // Can be used to carry metadata information
+}

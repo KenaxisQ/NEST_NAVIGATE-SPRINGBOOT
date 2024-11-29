@@ -3,8 +3,14 @@ package com.kenaxisq.nestnavigate.property.service;
 import com.kenaxisq.nestnavigate.custom_exceptions.ApiException;
 import com.kenaxisq.nestnavigate.custom_exceptions.ErrorCodes;
 import com.kenaxisq.nestnavigate.property.controller.PropertyController;
+import com.kenaxisq.nestnavigate.property.dto.AggregatePropertyDto;
+import com.kenaxisq.nestnavigate.property.dto.PgDto;
+import com.kenaxisq.nestnavigate.property.dto.PropertyDto;
 import com.kenaxisq.nestnavigate.property.entity.Property;
+import com.kenaxisq.nestnavigate.property.mapper.PropertyDtoMapper;
+import com.kenaxisq.nestnavigate.property.mapper.PropertyMapper;
 import com.kenaxisq.nestnavigate.property.repository.PropertyRepository;
+import com.kenaxisq.nestnavigate.property.validators.CommonValidator;
 import com.kenaxisq.nestnavigate.user.entity.User;
 import com.kenaxisq.nestnavigate.user.repository.UserRepository;
 import com.kenaxisq.nestnavigate.user.service.UserService;
@@ -12,16 +18,20 @@ import com.kenaxisq.nestnavigate.user.service.UserServiceImpl;
 import com.kenaxisq.nestnavigate.utils.ApiResponse;
 import com.kenaxisq.nestnavigate.utils.ErrorResponse;
 import com.kenaxisq.nestnavigate.utils.ResponseBuilder;
+import com.kenaxisq.nestnavigate.utils.property.PropertyCategory;
+import jakarta.validation.ConstraintViolation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -144,11 +154,11 @@ public class PropertyServiceImpl implements PropertyService{
             if (property.getDescription() != null) {
                 existingProperty.setDescription(property.getDescription());
             }
-            if (property.getSuper_builtup_area() != null) {
-                existingProperty.setSuper_builtup_area(property.getSuper_builtup_area());
+            if (property.getSuperBuiltupArea() != null) {
+                existingProperty.setSuperBuiltupArea(property.getSuperBuiltupArea());
             }
-            if (property.getCarpet_area() != null) {
-                existingProperty.setCarpet_area(property.getCarpet_area());
+            if (property.getCarpetArea() != null) {
+                existingProperty.setCarpetArea(property.getCarpetArea());
             }
             if (property.getPrice() != null) {
                 existingProperty.setPrice(property.getPrice());
@@ -221,103 +231,65 @@ public class PropertyServiceImpl implements PropertyService{
         }
     }
 
-    public Property saveProperty(Property property, String userId) {
-        logger.info("Saving property: " + property.toString());
-        if(userService.getUser(userId) == null) {
-            throw new ApiException(ErrorCodes.USER_NOT_FOUND);
-        }
-        if(userService.getUser(userId).getProperties_listing_limit() <= 0) {
-            throw new ApiException("ERR_LISTING_LIMIT_EXCEED",
-                    "Your Limit for Posting Property Exceeded...",
-                    HttpStatus.BAD_REQUEST);
-        }
-        property.setOwner(userService.getUser(userId));
-        List<String> errors = validateProperty(property);
-        if (!errors.isEmpty()) {
-            String errorMessage = errors.stream().collect(Collectors.joining(", "));
-            throw new ApiException("ERR_PROPERTY_VALIDATION",
-                    errorMessage, HttpStatus.BAD_REQUEST);
-        }
-
+    public Property postProperty(AggregatePropertyDto propertyDto, String userId) {
+        logger.info("Received Property Data: " + propertyDto.toString());
         try {
-            Property savedproperty = propertyRepository.save(property);
-            logger.info("Property saved successfully: " + savedproperty);
-            User user = property.getOwner();
-            user.setProperties_listed(user.getProperties_listed()+1);
-            user.setProperties_listing_limit(user.getProperties_listing_limit()-1);
-            userService. updateUser(user);
-            return savedproperty;
+            userService.getUser(userId);
+            if (userService.getUser(userId).getProperties_listing_limit() <= 0) {
+                throw new ApiException(ErrorCodes.PROPERTY_LISTING_LIMIT_EXCEEDED);
+            }
+            boolean isValidCategory = false;
+            for (PropertyCategory category : PropertyCategory.values()) {
+                if (category.name().equalsIgnoreCase(propertyDto.getPropertyCategory())) {
+                    isValidCategory = true;
+                    break;
+                }
+            }
+            if (!isValidCategory) {
+                throw new ApiException(ErrorCodes.INVALID_PROPERTY_CATEGORY);
+            }
 
-        } catch (Exception e) {
-            throw new ApiException("ERR_PROPERTY_LISTING", "Error saving property: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            Property property = validateAndReturnPropertyEntity(propertyDto);
+            property.setListedby(getAuthorityOfUser(userId).toString());
+            property.setOwner(userService.getUser(userId));
+            logger.info("Saving property: " + property.toString());
+            Property savedProperty = propertyRepository.save(property);
+            userService.getUser(userId).setProperties_listed(userService.getUser(userId).getProperties_listed()+1);
+            userService.getUser(userId).setProperties_listing_limit(userService.getUser(userId).getProperties_listing_limit()-1);
+            return savedProperty;
+        }
+        catch (ApiException ex){
+            throw ex;
+        }
+        catch (Exception ex){
+            throw new ApiException("ERR_PROPERTY_POST",
+                    "Error saving property: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+    private Property validateAndReturnPropertyEntity(AggregatePropertyDto propertyDto) throws ApiException {
+        if (propertyDto.getPropertyCategory().equalsIgnoreCase("PG")) {
+            PgDto pg = PropertyDtoMapper.mapToPgDto(propertyDto);
+            Set<ConstraintViolation<PgDto>> violations = CommonValidator.validate(pg);
+            if (!violations.isEmpty()) {
+                StringBuilder errorMessages = new StringBuilder();
+                for (ConstraintViolation<PgDto> violation : violations) {
+                    errorMessages.append(violation.getMessage()).append("\n");
+                }
+                throw new ApiException("VALIDATION_ERROR", errorMessages.toString(), HttpStatus.BAD_REQUEST);
+            }
+            return PropertyMapper.mapDtoToEntity(pg, Property.class);
+        }
+        else {
+            throw new ApiException("ERR_INVALID_PROPERTY_CATEGORY",
+                    "Invalid Property Category: " + propertyDto.getPropertyCategory(), HttpStatus.BAD_REQUEST);
         }
     }
 
-    private List<String> validateProperty(Property property) {
-        List<String> errors = new ArrayList<>();
-
-        if (property.getTitle() == null || property.getTitle().isEmpty()) {
-            errors.add("Title is mandatory.");
-        }
-        if (property.getType() == null) {
-            errors.add("Property type is mandatory.");
-        }
-        if (property.getPropertyCategory() == null || property.getPropertyCategory().isEmpty()) {
-            errors.add("Property category is mandatory.");
-        }
-        if (property.getFacing() == null) {
-            errors.add("Facing direction is mandatory.");
-        }
-        if (property.getPropertyListingFor() == null) {
-            errors.add("Property listing type is mandatory.");
-        }
-        if (property.getFurnitureStatus() == null) {
-            errors.add("Furniture status is mandatory.");
-        }
-        if (property.getDescription() == null || property.getDescription().isEmpty()) {
-            errors.add("Description is mandatory.");
-        }
-        if (property.getSuper_builtup_area() == null) {
-            errors.add("Super built-up area is mandatory.");
-        }
-        if (property.getPrice() == null) {
-            errors.add("Price is mandatory.");
-        }
-        if (property.getIsNegotiable() == null) {
-            errors.add("Negotiable status is mandatory.");
-        }
-        if (property.getOwner() == null) {
-            errors.add("Owner is mandatory.");
-        }
-        if (property.getStatus() == null) {
-            errors.add("Property status is mandatory.");
-        }
-        if (property.getListedby() == null) {
-            errors.add("Listed by is mandatory.");
-        }
-        if (property.getPrimaryContact() == null || property.getPrimaryContact().isEmpty()) {
-            errors.add("Contact information is mandatory.");
-        }
-        if (property.getMandal() == null || property.getMandal().isEmpty()) {
-            errors.add("Mandal is mandatory.");
-        }
-        if (property.getVillage() == null || property.getVillage().isEmpty()) {
-            errors.add("Village is mandatory.");
-        }
-        if (property.getZip() == null || property.getZip().isEmpty()) {
-            errors.add("Zip code is mandatory.");
-        }
-        if (property.getState() == null || property.getState().isEmpty()) {
-            errors.add("State is mandatory.");
-        }
-        if (property.getCountry() == null || property.getCountry().isEmpty()) {
-            errors.add("Country is mandatory.");
-        }
-        if (property.getRevenueDivision() == null || property.getRevenueDivision().isEmpty()) {
-            errors.add("Revenue division is mandatory.");
-        }
-
-        return errors;
+    private GrantedAuthority getAuthorityOfUser(String userId) {
+        return userService.getUser(userId).getAuthorities().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No authority found for user"));
     }
+
 
 }
