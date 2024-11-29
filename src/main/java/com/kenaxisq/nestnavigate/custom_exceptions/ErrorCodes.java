@@ -53,8 +53,8 @@ public enum ErrorCodes {
     TIMEOUT_ERROR("SYS_004", "Operation timed out", HttpStatus.GATEWAY_TIMEOUT),
 
     // Property Errors (PRTY_XXX)
-    ERR_PROPERTY_NOT_FOUND("PRTY_001", "No Property with the specified ID found", HttpStatus.NOT_FOUND);
-
+    ERR_PROPERTY_NOT_FOUND("PRTY_001", "No Property with the specified ID found", HttpStatus.NOT_FOUND),
+    INVALID_PROPERTY_CATEGORY("PRTY_002", "The property category must be RESIDENTIAL, COMMERCIAL, LAND, or PG.", HttpStatus.BAD_REQUEST);
     private final String code;
     private final String message;
     private final HttpStatus httpStatus;
