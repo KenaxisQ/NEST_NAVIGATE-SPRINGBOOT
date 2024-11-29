@@ -159,7 +159,7 @@ public class AuthenticationService {
                 User foundUser = existingUserByEmail.orElseGet(existingUserByPhone::get);
 
                 if (!foundUser.isUserVerified()) {
-                    sendVerificationCodeToEmail(foundUser, "Account Verification");
+                    sendVerificationCodeToEmail(foundUser, "REGISTRATION");
                     return ResponseEntity.ok(ResponseBuilder.success(foundUser, "User already found, verification code sent to your email"));
                 }
 

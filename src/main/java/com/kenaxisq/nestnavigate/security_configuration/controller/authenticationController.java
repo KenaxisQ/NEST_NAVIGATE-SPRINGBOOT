@@ -42,7 +42,7 @@ public class authenticationController {
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordDto forgotPasswordDto) {
         return authenticationService.forgotPassword(forgotPasswordDto);
     }
-    @PostMapping("/verifyAndResetPassword")
+    @PutMapping("/verifyAndResetPassword")
     public ResponseEntity<?> verifyAndResetPassword(@RequestBody VerifyForgotPasswordDto verifyForgotPasswordDto) {
         return authenticationService.verifyAndResetPassword(verifyForgotPasswordDto);
     }

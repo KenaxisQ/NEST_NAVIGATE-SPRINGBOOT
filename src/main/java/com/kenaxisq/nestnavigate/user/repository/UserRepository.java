@@ -12,6 +12,6 @@ public interface UserRepository extends CrudRepository<User, String>{
     Optional<User> findByEmail(String email);
     Optional<User> findByPhone(String phone);
     @Query("SELECT u FROM User u WHERE u.email = :identifier OR u.phone = :identifier")
-    Optional<User> findByEmailOrPhone(String Identifier);
+    Optional<User> findByEmailOrPhone(String identifier);
     Optional<User> findByVerificationCode(String verificationCode);
 }
