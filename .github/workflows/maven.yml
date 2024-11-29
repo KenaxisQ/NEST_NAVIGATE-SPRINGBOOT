@@ -45,6 +45,7 @@ jobs:
           SPRING_SECURITY_USER_PASSWORD: ${{secrets.SPRING_SECURITY_USER_PASSWORD}}
         run: |
          # Deploy the WAR file using curl
+          echo "spring.datasource.url=${{ secrets.SPRING_DATASOURCE_URL }}" >> src/main/resources/application.properties
           Invoke-WebRequest -Uri "http://103.127.31.155:8080/manager/text/deploy?path=/nestNavigate-0.0.1-SNAPSHOT&update=true" `
                   -Credential (New-Object PSCredential("root", (ConvertTo-SecureString "root" -AsPlainText -Force))) `
                   -Method Put `
