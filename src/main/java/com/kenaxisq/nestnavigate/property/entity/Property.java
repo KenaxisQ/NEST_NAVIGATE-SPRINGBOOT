@@ -1,5 +1,6 @@
 package com.kenaxisq.nestnavigate.property.entity;
 
+import com.kenaxisq.nestnavigate.utils.property.Directions;
 import com.kenaxisq.nestnavigate.utils.property.Furniture;
 import com.kenaxisq.nestnavigate.utils.property.PropertyStatus;
 import com.kenaxisq.nestnavigate.user.entity.User;
@@ -31,7 +32,7 @@ public class Property {
     @Column(nullable = false)
     private String propertyCategory;
     @Column(nullable = true)
-    private String facing;
+    private Directions facing;
     @Column(nullable = false)
     private String propertyListingFor;
     @Column(nullable = false)

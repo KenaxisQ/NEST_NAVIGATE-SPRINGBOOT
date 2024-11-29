@@ -33,6 +33,8 @@ public class PropertyDtoMapper {
         residentialDto.setNoOfRooms(aggDto.getNoOfRooms());
         residentialDto.setNoOfBalconies(aggDto.getNoOfBalconies());
         residentialDto.setMoveInDate(aggDto.getMoveInDate());
+        residentialDto.setLength(aggDto.getLength());
+        residentialDto.setWidth(aggDto.getWidth());
 
         return residentialDto;
     }

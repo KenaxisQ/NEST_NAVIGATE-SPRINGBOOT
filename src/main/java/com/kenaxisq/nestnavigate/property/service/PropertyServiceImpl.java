@@ -3,9 +3,7 @@ package com.kenaxisq.nestnavigate.property.service;
 import com.kenaxisq.nestnavigate.custom_exceptions.ApiException;
 import com.kenaxisq.nestnavigate.custom_exceptions.ErrorCodes;
 import com.kenaxisq.nestnavigate.property.controller.PropertyController;
-import com.kenaxisq.nestnavigate.property.dto.AggregatePropertyDto;
-import com.kenaxisq.nestnavigate.property.dto.PgDto;
-import com.kenaxisq.nestnavigate.property.dto.PropertyDto;
+import com.kenaxisq.nestnavigate.property.dto.*;
 import com.kenaxisq.nestnavigate.property.entity.Property;
 import com.kenaxisq.nestnavigate.property.mapper.PropertyDtoMapper;
 import com.kenaxisq.nestnavigate.property.mapper.PropertyMapper;
@@ -248,7 +246,6 @@ public class PropertyServiceImpl implements PropertyService{
             if (!isValidCategory) {
                 throw new ApiException(ErrorCodes.INVALID_PROPERTY_CATEGORY);
             }
-
             Property property = validateAndReturnPropertyEntity(propertyDto);
             property.setListedby(getAuthorityOfUser(userId).toString());
             property.setOwner(userService.getUser(userId));
@@ -269,19 +266,34 @@ public class PropertyServiceImpl implements PropertyService{
     private Property validateAndReturnPropertyEntity(AggregatePropertyDto propertyDto) throws ApiException {
         if (propertyDto.getPropertyCategory().equalsIgnoreCase("PG")) {
             PgDto pg = PropertyDtoMapper.mapToPgDto(propertyDto);
-            Set<ConstraintViolation<PgDto>> violations = CommonValidator.validate(pg);
-            if (!violations.isEmpty()) {
-                StringBuilder errorMessages = new StringBuilder();
-                for (ConstraintViolation<PgDto> violation : violations) {
-                    errorMessages.append(violation.getMessage()).append("\n");
-                }
-                throw new ApiException("VALIDATION_ERROR", errorMessages.toString(), HttpStatus.BAD_REQUEST);
-            }
+            validatePropertyDto(pg);
             return PropertyMapper.mapDtoToEntity(pg, Property.class);
-        }
-        else {
+        } else if (propertyDto.getPropertyCategory().equalsIgnoreCase("LAND")) {
+            LandDto land = PropertyDtoMapper.mapToLandDto(propertyDto);
+            validatePropertyDto(land);
+            return PropertyMapper.mapDtoToEntity(land, Property.class);
+        }else if (propertyDto.getPropertyCategory().equalsIgnoreCase("RESIDENTIAL")) {
+            ResidentialPropertyDto residential = PropertyDtoMapper.mapToResidentialPropertyDto(propertyDto);
+            validatePropertyDto(residential);
+            return PropertyMapper.mapDtoToEntity(residential, Property.class);
+        } else if (propertyDto.getPropertyCategory().equalsIgnoreCase("COMMERCIAL")) {
+                CommercialPropertyDto commercial = PropertyDtoMapper.mapToCommercialPropertyDto(propertyDto);
+                validatePropertyDto(commercial);
+                return PropertyMapper.mapDtoToEntity(commercial, Property.class);
+        } else {
             throw new ApiException("ERR_INVALID_PROPERTY_CATEGORY",
                     "Invalid Property Category: " + propertyDto.getPropertyCategory(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private static <T> void validatePropertyDto(T dto) throws ApiException {
+        Set<ConstraintViolation<T>> violations = CommonValidator.validate(dto);
+        if (!violations.isEmpty()) {
+            StringBuilder errorMessages = new StringBuilder();
+            for (ConstraintViolation<T> violation : violations) {
+                errorMessages.append(violation.getMessage()).append("\n");
+            }
+            throw new ApiException("VALIDATION_ERROR", errorMessages.toString(), HttpStatus.BAD_REQUEST);
         }
     }
 
