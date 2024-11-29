@@ -4,6 +4,7 @@ import com.kenaxisq.nestnavigate.property.dto.AggregatePropertyDto;
 import com.kenaxisq.nestnavigate.property.dto.PropertyDto;
 import com.kenaxisq.nestnavigate.property.dto.ResidentialPropertyDto;
 import com.kenaxisq.nestnavigate.property.entity.Property;
+import com.kenaxisq.nestnavigate.property.filter.dto.PropertyFilterDto;
 import com.kenaxisq.nestnavigate.utils.ApiResponse;
 import org.springframework.http.ResponseEntity;
 
@@ -15,5 +16,5 @@ public interface PropertyService {
     List<Property> getAllProperties();
     String deleteProperty(String id);
     Property updateProperty(Property property);
-
+    public List<Property> searchProperties(PropertyFilterDto filterDto);
 }

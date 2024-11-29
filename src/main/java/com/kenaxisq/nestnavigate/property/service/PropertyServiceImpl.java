@@ -2,35 +2,29 @@ package com.kenaxisq.nestnavigate.property.service;
 
 import com.kenaxisq.nestnavigate.custom_exceptions.ApiException;
 import com.kenaxisq.nestnavigate.custom_exceptions.ErrorCodes;
-import com.kenaxisq.nestnavigate.property.controller.PropertyController;
 import com.kenaxisq.nestnavigate.property.dto.*;
 import com.kenaxisq.nestnavigate.property.entity.Property;
+import com.kenaxisq.nestnavigate.property.filter.dto.PropertyFilterDto;
+import com.kenaxisq.nestnavigate.property.filter.service.PropertySpecification;
 import com.kenaxisq.nestnavigate.property.mapper.PropertyDtoMapper;
 import com.kenaxisq.nestnavigate.property.mapper.PropertyMapper;
 import com.kenaxisq.nestnavigate.property.repository.PropertyRepository;
 import com.kenaxisq.nestnavigate.property.validators.CommonValidator;
 import com.kenaxisq.nestnavigate.user.entity.User;
-import com.kenaxisq.nestnavigate.user.repository.UserRepository;
 import com.kenaxisq.nestnavigate.user.service.UserService;
-import com.kenaxisq.nestnavigate.user.service.UserServiceImpl;
-import com.kenaxisq.nestnavigate.utils.ApiResponse;
-import com.kenaxisq.nestnavigate.utils.ErrorResponse;
-import com.kenaxisq.nestnavigate.utils.ResponseBuilder;
 import com.kenaxisq.nestnavigate.utils.property.PropertyCategory;
 import jakarta.validation.ConstraintViolation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class PropertyServiceImpl implements PropertyService{
@@ -229,6 +223,7 @@ public class PropertyServiceImpl implements PropertyService{
         }
     }
 
+    @Override
     public Property postProperty(AggregatePropertyDto propertyDto, String userId) {
         logger.info("Received Property Data: " + propertyDto.toString());
         try {
@@ -284,6 +279,11 @@ public class PropertyServiceImpl implements PropertyService{
             throw new ApiException("ERR_INVALID_PROPERTY_CATEGORY",
                     "Invalid Property Category: " + propertyDto.getPropertyCategory(), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Property> searchProperties(PropertyFilterDto filterDto) {
+        return propertyRepository.findAll(PropertySpecification.getPropertiesWithFilters(filterDto));
     }
 
     private static <T> void validatePropertyDto(T dto) throws ApiException {

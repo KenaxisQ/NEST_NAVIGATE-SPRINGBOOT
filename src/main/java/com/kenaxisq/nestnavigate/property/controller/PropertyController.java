@@ -5,6 +5,7 @@ import com.kenaxisq.nestnavigate.property.dto.AggregatePropertyDto;
 import com.kenaxisq.nestnavigate.property.dto.PropertyDto;
 import com.kenaxisq.nestnavigate.property.dto.ResidentialPropertyDto;
 import com.kenaxisq.nestnavigate.property.entity.Property;
+import com.kenaxisq.nestnavigate.property.filter.dto.PropertyFilterDto;
 import com.kenaxisq.nestnavigate.property.service.PropertyService;
 import com.kenaxisq.nestnavigate.utils.ApiResponse;
 import com.kenaxisq.nestnavigate.utils.ResponseBuilder;
@@ -36,6 +37,12 @@ public class PropertyController {
         public ResponseEntity<ApiResponse<List<Property>>> getAllProperties(){
         List<Property> properties = new ArrayList<>();
         properties = propertyService.getAllProperties();
+        return ResponseEntity.ok(ResponseBuilder.success(properties,"Properties Retrieved Successfully"));
+        }
+        @GetMapping("/filter")
+        public ResponseEntity<ApiResponse<List<Property>>> getFilteredProperties(@RequestBody PropertyFilterDto filterDto){
+        List<Property> properties = new ArrayList<>();
+        properties = propertyService.searchProperties(filterDto);
         return ResponseEntity.ok(ResponseBuilder.success(properties,"Properties Retrieved Successfully"));
         }
     @PostMapping("/create")
