@@ -22,8 +22,8 @@ jobs:
       # SECURITY_JWT_REFRESH_TOKEN_EXPIRATION: ${{ secrets.SECURITY_JWT_REFRESH_TOKEN_EXPIRATION }}
       SPRING_SECURITY_USER_NAME: ${{ secrets.SPRING_SECURITY_USER_NAME }}
       SPRING_SECURITY_USER_PASSWORD: ${{ secrets.SPRING_SECURITY_USER_PASSWORD }}
-      TOMCAT_USERNAME: ${{secrets.TOMCAT_USERNAME}}
-      TOMCAT_PASSWORD: ${{ secrets.TOMCAT_PASSWORD }}
+      # TOMCAT_USERNAME: ${{secrets.TOMCAT_USERNAME}}
+      # TOMCAT_PASSWORD: ${{ secrets.TOMCAT_PASSWORD }}
       
 
     steps:
@@ -50,6 +50,6 @@ jobs:
         if: success()  # Only execute if the artifact was uploaded successfully
         run: |
           # Deploy the WAR file using curl
-          curl -u ${{secrets.TOMCAT_USERNAME}}:${{ secrets.TOMCAT_PASSWORD }} \
+          curl -u root:root \
             -T target/Nest-Navigate-0.0.1-SNAPSHOT.war \
             "http://103.127.31.155:8080/manager/text/deploy?path=/nestnavigate&update=true"
