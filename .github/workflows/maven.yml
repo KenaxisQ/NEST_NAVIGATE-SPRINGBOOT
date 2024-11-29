@@ -42,13 +42,12 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: nest-navigate  # Name of the artifact
-          path: target/nestNavigate-0.0.1-SNAPSHOT.war  # Correct the path to where the WAR file is located (default is target/)
+          path: target/Nest-Navigate-0.0.1-SNAPSHOT.war  # Correct the path to where the WAR file is located (default is target/)
 
       - name: Deploy WAR to Local Tomcat
         if: success()  # Only execute if the artifact was uploaded successfully
         run: |
-          echo "spring.datasource.url=${{ secrets.SPRING_DATASOURCE_URL }}" >> src/main/resources/application.properties
           # Deploy the WAR file using curl
           curl -u root:${{ secrets.TOMCAT_PASSWORD }} \
-            -T target/nestNavigate-0.0.1-SNAPSHOT.war \
-            "http://103.127.31.155:8080/manager/text/deploy?path=/nestNavigate-0.0.1-SNAPSHOT&update=true"
+            -T target/Nest-Navigate-0.0.1-SNAPSHOT.war \
+            "http://103.127.31.155:8080/manager/text/deploy?path=/nestnavigate&update=true"
