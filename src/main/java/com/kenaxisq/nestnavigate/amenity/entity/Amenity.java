@@ -18,6 +18,9 @@ public class Amenity {
     private String name;
     @Column(nullable = false)
     private String category;
+    @Column(nullable = false)
+    private String subCategory;
+
 
     //    private String description;
     public Amenity(String name, String category) {

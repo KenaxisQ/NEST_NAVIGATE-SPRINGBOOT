@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("v1/api/amenity")
+@RequestMapping("amenity")
 @PreAuthorize("isAuthenticated()")
 @SecurityRequirement(name = "bearerAuth")
 public class AmenityController {
