@@ -1,4 +1,4 @@
-INSERT INTO nestnavigate.amenity (id, name, category, sub_category) VALUES
+INSERT INTO amenity (id, name, category, sub_category) VALUES
 -- Land Amenities
 (UUID(), 'Electricity Connection', 'LAND', 'Infrastructure'),
 (UUID(), 'Water Supply', 'LAND', 'Infrastructure'),
