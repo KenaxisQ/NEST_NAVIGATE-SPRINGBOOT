@@ -52,4 +52,4 @@ jobs:
           # Deploy the WAR file using curl
           curl -u ${{secrets.TOMCAT_USERNAME}}:${{ secrets.TOMCAT_PASSWORD }} \
             -T target/Nest-Navigate-0.0.1-SNAPSHOT.war \
-            "http://103.127.31.155:8080/manager/text/deploy?path=/nestnavigate&update=true"
+            "http://103.127.31.155:8080/manager/text/deploy?path=/NN&update=true"
