@@ -1,5 +1,6 @@
 package com.kenaxisq.nestnavigate.utils.property;
 public enum Furniture {
+    NOT_SPECIFIED,
     FULLY_FURNISHED,
     SEMI_FURNISHED,
     UNFURNISHED;
