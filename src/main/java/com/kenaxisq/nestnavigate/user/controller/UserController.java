@@ -23,7 +23,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/{identifier}")
+    @GetMapping("/emailOrPhone/{identifier}")
     public ResponseEntity<User> getUserByEmailOrPhone(@PathVariable String identifier) {
         return ResponseEntity.ok(userService.findByEmailOrPhone(identifier));
     }
