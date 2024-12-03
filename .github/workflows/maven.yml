@@ -24,6 +24,9 @@ jobs:
       SPRING_SECURITY_USER_PASSWORD: ${{ secrets.SPRING_SECURITY_USER_PASSWORD }}
       # TOMCAT_USERNAME: ${{secrets.TOMCAT_USERNAME}}
       # TOMCAT_PASSWORD: ${{ secrets.TOMCAT_PASSWORD }}
+      SMB_SERVER_ADDRESS: ${{ secrets.SMB_SERVER_ADDRESS }}
+      SMB_SERVER_USERNAME: ${{ secrets.SMB_SERVER_USERNAME }}
+      SMB_SERVER_PASSWORD: ${{ secrets.SMB_SERVER_PASSWORD }}
       
 
     steps:
