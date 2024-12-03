@@ -18,6 +18,6 @@ public interface UserService {
     public User getUser(String id);
     public List<User> getUsers();
     public void updatePropertyListingLimit(String userId, Integer limit);
-
+    public String updateProfilePicture(String userId, String profilePicture);
     void updatePropertyListed(String userId, Integer limit);
 }

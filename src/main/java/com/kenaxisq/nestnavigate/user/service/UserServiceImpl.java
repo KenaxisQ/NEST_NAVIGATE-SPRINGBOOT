@@ -190,6 +190,16 @@ public class UserServiceImpl implements UserService{
         logger.info("Property Listing Limit for User {} updated to: {}",user.getName(),user.getProperties_listing_limit());
 //            return String.format("Property Listing Limit for User %s updated to: %d",user.getName(),user.getProperties_listing_limit());
     }
+
+    @Override
+    public String updateProfilePicture(String userId, String profilePicture) {
+        User user = getUser(userId);
+        user.setProfilePic(profilePicture);
+        userRepository.save(user);
+        logger.info("UserServiceImpl: updateProfilePicture(): Profile Picture for User {} updated successfully :) ",user.getName());
+        return String.format("Profile Picture for User %s updated successfully :) ",user.getName());
+    }
+
     @Override
     public void updatePropertyListed(String userId, Integer limit){
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND));

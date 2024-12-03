@@ -36,8 +36,12 @@ public class MediaController {
     }
 
     @GetMapping("/read")
-    public ResponseEntity<ApiResponse<byte[]>> readFile(@RequestBody MediaReadDto mediaReadDto) throws IOException {
+    public ResponseEntity<ApiResponse<List<byte[]>>> readFile(@RequestBody MediaReadDto mediaReadDto) throws IOException {
         return ResponseEntity.ok(ResponseBuilder.success(mediaService.readImage(mediaReadDto), "File Retrieved Successfully"));
+    }
+    @DeleteMapping("/delete")
+    public ResponseEntity<ApiResponse<String>>deleteFile(@RequestBody MediaReadDto mediaReadDto) throws IOException {
+        return ResponseEntity.ok(ResponseBuilder.success(mediaService.deleteFile(mediaReadDto), "File Deleted Successfully"));
     }
 
 }

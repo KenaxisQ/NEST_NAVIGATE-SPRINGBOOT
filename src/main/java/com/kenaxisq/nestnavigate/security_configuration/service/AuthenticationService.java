@@ -168,12 +168,11 @@ public class AuthenticationService {
 
             User createuser = new User(user.getName(), user.getEmail(),user.getPhone(),user.getPassword());
             createuser.setPassword(passwordEncoder.encode(user.getPassword()));
-
+            if (user.getProfilePicture()!=null)createuser.setProfilePic(user.getProfilePicture());
             User savedUser = userRepository.save(createuser);
 
             // Send the verification email
             sendVerificationCodeToEmail(savedUser,"REGISTRATION");
-
             return ResponseEntity.ok(ResponseBuilder.success(savedUser, "Registration successful"));
         } catch (ApiException e) {
             logger.error("Registration error: {}", e.getMessage());

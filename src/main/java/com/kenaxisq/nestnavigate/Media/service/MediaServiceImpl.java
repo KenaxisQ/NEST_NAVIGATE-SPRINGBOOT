@@ -1,5 +1,7 @@
 package com.kenaxisq.nestnavigate.Media.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
@@ -11,6 +13,7 @@ import com.kenaxisq.nestnavigate.Media.util.ImageHandler;
 import com.kenaxisq.nestnavigate.Media.util.ProcessedImage;
 import com.kenaxisq.nestnavigate.custom_exceptions.ApiException;
 import com.kenaxisq.nestnavigate.custom_exceptions.ErrorCodes;
+import com.kenaxisq.nestnavigate.user.entity.User;
 import com.kenaxisq.nestnavigate.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +32,7 @@ import com.hierynomus.smbj.share.File;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -37,6 +41,7 @@ import java.util.Objects;
 @Service
 public class MediaServiceImpl implements MediaService {
 
+    private final ObjectMapper objectMapper;
     @Value("${SMB_SERVER_ADDRESS}")
     private String SERVER;
     @Value("${SMB_SERVER_USERNAME}")
@@ -47,13 +52,16 @@ public class MediaServiceImpl implements MediaService {
     private String SHARE_NAME_PROPERTIES;
     @Value("${SMB_SERVER_SHARE_NAME_USER_PROFILES}")
     private String SHARE_NAME_USER_PROFILES;
-
     private static final Logger logger = LoggerFactory.getLogger(MediaServiceImpl.class);
     private final UserService userService;
+    private Gson gson = new Gson();
+
     @Autowired
-    public MediaServiceImpl(UserService userService) {
+    public MediaServiceImpl(UserService userService, ObjectMapper objectMapper) {
         this.userService = userService;
+        this.objectMapper = objectMapper;
     }
+
     public List<Media> uploadFiles(MediaUploadDto mediaUploadDto) {
         List<Media> uploadedFiles = new ArrayList<>();
         boolean isProperty = mediaUploadDto.getIsProperty();
@@ -84,12 +92,63 @@ public class MediaServiceImpl implements MediaService {
         }
 
         logger.info("Successfully uploaded files.");
+        userService.updateProfilePicture(identifier, gson.toJson(uploadedFiles.get(0)) );
         return uploadedFiles;
+    }
+
+    public List<byte[]> readImage(MediaReadDto mediaReadDto) {
+        boolean isProperty = mediaReadDto.isProperty();
+        String identifier = mediaReadDto.getIdentifier();
+        String fileName = mediaReadDto.getFileName();
+
+        try (SMBClient client = new SMBClient();
+            Connection connection = client.connect(SERVER);
+            Session session = connection.authenticate(new AuthenticationContext(USERNAME, PASSWORD.toCharArray(), null))) {
+            String shareName = isProperty ? SHARE_NAME_PROPERTIES : SHARE_NAME_USER_PROFILES;
+            DiskShare share = (DiskShare) session.connectShare(shareName);
+            List<byte[]> requestedImages = new ArrayList<>();
+            List<FileIdBothDirectoryInformation> directoryContents;
+            String basePath = isProperty ? identifier : "";
+            String searchPath = isProperty && fileName != null ? identifier + "/" + fileName : fileName;
+            directoryContents = share.list(basePath);
+            for (FileIdBothDirectoryInformation fileInfo : directoryContents) {
+                String currentFileName = fileInfo.getFileName();
+                if (!currentFileName.equals(".") && !currentFileName.equals("..")) {
+                    String fullPath = basePath + "/" + currentFileName;
+                    if (isProperty) {
+                        if (fileName == null || fileName.trim().isEmpty()) {
+                            if (isImageFile(currentFileName)) {
+                                requestedImages.add(readFile(fullPath, share));
+                            }
+                        } else {
+                            if (fullPath.equalsIgnoreCase(searchPath) && isImageFile(currentFileName)) {
+                                requestedImages.add(readFile(fullPath, share));
+                                return requestedImages;
+                            }
+                        }
+                    }
+                    else {
+                        if (currentFileName.startsWith(identifier) && isImageFile(currentFileName)) {
+                            requestedImages.add(readFile(fullPath, share));
+                            return requestedImages;
+                        }
+                    }
+                }
+            }
+
+            if (!requestedImages.isEmpty()) {
+                return requestedImages;
+            }
+            throw new ApiException(ErrorCodes.FILE_NOT_FOUND);
+
+        } catch (IOException e) {
+            throw new ApiException("FILESERVER_CONN_ERROR", "error while connecting to file server", HttpStatus.SERVICE_UNAVAILABLE);
+        }
     }
 
     private void validateSingleFileUpload(boolean isProperty, MultipartFile[] files) {
         if (!isProperty && files.length != 1) {
-            throw new ApiException("Only Single File is Accepted!", "Only one file can be uploaded when isProperty is false", HttpStatus.BAD_REQUEST);
+            throw new ApiException("Only Single File is Accepted!", "Only one file can be uploaded as user profile picture", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -113,6 +172,7 @@ public class MediaServiceImpl implements MediaService {
                 media.setCompressedSize(formatFileSize(compressedSize));
                 media.setSize(formatFileSize(file.getSize()));
                 media.setIdentifier(identifier);
+                media.setUploadDateTime(LocalDateTime.now().toString());
                 uploadedFiles.add(media);
 
             } catch (IOException e) {
@@ -143,6 +203,7 @@ public class MediaServiceImpl implements MediaService {
     public static String formatFileSize(long sizeInBytes) {
         return String.format("%.2f KB", sizeInBytes / 1024.0);
     }
+
     private void ensureDirectoriesForProperties(DiskShare share, String identifier) {
         String[] directories = identifier.split("/");
         StringBuilder currentPath = new StringBuilder();
@@ -158,45 +219,6 @@ public class MediaServiceImpl implements MediaService {
             }
         }
     }
-
-    public byte[] readImage(MediaReadDto mediaReadDto) {
-        boolean isProperty = mediaReadDto.isProperty();
-        String identifier = mediaReadDto.getIdentifier();
-        String fileName = mediaReadDto.getFileName();
-        try (SMBClient client = new SMBClient();
-             Connection connection = client.connect(SERVER);
-             Session session = connection.authenticate(new AuthenticationContext(USERNAME, PASSWORD.toCharArray(), null))) {
-
-            String shareName = isProperty ? SHARE_NAME_PROPERTIES : SHARE_NAME_USER_PROFILES;
-            DiskShare share = (DiskShare) session.connectShare(shareName);
-            String basePath = isProperty ? identifier : "";
-            String searchPath = isProperty ? identifier + "/" + fileName : fileName;
-
-            List<String> foundFiles = new ArrayList<>();
-            List<FileIdBothDirectoryInformation> directoryContents = share.list(basePath);
-
-            for (FileIdBothDirectoryInformation fileInfo : directoryContents) {
-                String currentFileName = fileInfo.getFileName();
-                if (!currentFileName.equals(".") && !currentFileName.equals("..")) {
-                    String fullPath = basePath + "/" + currentFileName;
-                    if (isProperty || fullPath.equalsIgnoreCase(searchPath)) {
-                        if (isImageFile(currentFileName)) {
-                            foundFiles.add(fullPath);
-                        }
-                    }
-                }
-            }
-
-            if (!foundFiles.isEmpty()) {
-                String filePath = foundFiles.get(0);
-                return readFile(filePath, share);
-            }
-            throw new ApiException(ErrorCodes.FILE_NOT_FOUND);
-        } catch (IOException e) {
-            throw new ApiException("FILESERVER_CONN_ERROR", "error while connecting to file server", HttpStatus.SERVICE_UNAVAILABLE);
-        }
-    }
-
 
     private byte[] readFile(String filePath, DiskShare share) throws IOException {
         File smbFile = share.openFile(
@@ -223,17 +245,63 @@ public class MediaServiceImpl implements MediaService {
         }
     }
 
-    public void deleteFile(String filePath) throws IOException {
+    public String deleteFile(MediaReadDto mediaReadDto) {
+        logger.debug("Entering deleteFile method with MediaReadDto: {}", mediaReadDto);
+
         try (SMBClient client = new SMBClient();
              Connection connection = client.connect(SERVER);
              Session session = connection.authenticate(new AuthenticationContext(USERNAME, PASSWORD.toCharArray(), null))) {
 
-            DiskShare share = (DiskShare) session.connectShare(SHARE_NAME_PROPERTIES);
-            share.rm(filePath);
+            String filePath;
+            if (mediaReadDto.isProperty() && mediaReadDto.getFileName() != null) {
+                filePath = mediaReadDto.getIdentifier() + "/" + mediaReadDto.getFileName();
+            } else if (mediaReadDto.isProperty()) {
+                filePath = mediaReadDto.getIdentifier();
+            } else {
+                filePath = mediaReadDto.getFileName();
+            }
+
+            logger.info("Preparing to delete file at path: {}", filePath);
+            DiskShare share = (DiskShare) session.connectShare(mediaReadDto.isProperty() ? SHARE_NAME_PROPERTIES : SHARE_NAME_USER_PROFILES);
+
+            try {
+                share.rm(filePath);
+                logger.info("File successfully deleted: {}", filePath);
+            } catch (Exception e) {
+                logger.error("Failed to delete file at path: {}", filePath, e);
+                throw new ApiException(ErrorCodes.FILE_NOT_FOUND); // Ensure to use appropriate error code
+            }
+
+        } catch (IOException ioe) {
+            logger.error("Error connecting to file server", ioe);
+            throw new ApiException("FILESERVER_CONN_ERROR", "Error while connecting to file server", HttpStatus.SERVICE_UNAVAILABLE);
+        } catch (Exception ex) {
+            logger.error("General error occurred while deleting file", ex);
+            throw new ApiException(ErrorCodes.INTERNAL_SERVER_ERROR);
         }
 
-    }
+        try {
+            if (!mediaReadDto.isProperty()) {
+                User user = userService.getUser(mediaReadDto.getIdentifier());
+                user.setProfilePic(null);
 
+                try {
+                    userService.updateUser(user);
+                    logger.info("User profile picture updated successfully for User: {}", user.getName());
+                    return "Profile Picture Deleted Successfully for User: " + user.getName();
+                } catch (Exception e) {
+                    logger.error("Failed to update user profile picture for: {}", user.getName(), e);
+                    throw new ApiException("USER_UPDATE_ERROR", "Failed to update user profile picture", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("User not found or other error: {}", mediaReadDto.getIdentifier(), e);
+            throw new ApiException(ErrorCodes.USER_NOT_FOUND); // Ensure to use appropriate error code
+        }
+
+        logger.debug("Exiting deleteFile method");
+        return "Profile Picture Deleted Successfully for Property: " + mediaReadDto.getIdentifier();
+    }
     private boolean isImageFile(String fileName) {
         String fileNameLower = fileName.toLowerCase();
         return fileNameLower.endsWith(".jpg") || fileNameLower.endsWith(".jpeg") || fileNameLower.endsWith(".png");

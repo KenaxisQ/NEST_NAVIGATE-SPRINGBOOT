@@ -2,6 +2,9 @@ package com.kenaxisq.nestnavigate.Media.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 public class Media {
@@ -18,4 +21,6 @@ public class Media {
     private String compressedSize;
 
     private String identifier;
+
+    private String uploadDateTime;
 }

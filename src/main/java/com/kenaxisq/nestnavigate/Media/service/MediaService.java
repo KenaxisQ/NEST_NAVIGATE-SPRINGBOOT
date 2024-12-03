@@ -9,5 +9,6 @@ import java.util.List;
 
 public interface MediaService {
     public List<Media> uploadFiles(MediaUploadDto mediaUploadDto) throws IOException;
-    public byte[] readImage(MediaReadDto mediaReadDto);
+    public List<byte[]> readImage(MediaReadDto mediaReadDto);
+    public String deleteFile(MediaReadDto mediaReadDto);
 }
