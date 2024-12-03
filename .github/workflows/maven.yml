@@ -2,11 +2,11 @@ name: Java CI pipeline
 
 on:
   push:
-    branches: [ "temp" ]  # Trigger pipeline on push to "Dev" branch and "Siddu" branch
+    branches: [ "temp" ]  # Trigger pipeline on push to "temp" branch
 
 jobs:
   build:
-    runs-on: ubuntu-latest # Runs the job on the latest Ubuntu 
+    runs-on: ubuntu-latest # Runs the job on the latest Ubuntu
 
     steps:
       - uses: actions/checkout@v4  # Checkout code from the repository
@@ -34,18 +34,36 @@ jobs:
           SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
           SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-          SPRING_MAIL_HOST: ${{secrets.SPRING_MAIL_HOST}}
-          SPRING_MAIL_PORT: ${{secrets.SPRING_MAIL_PORT}}
-          SPRING_MAIL_USERNAME: ${{secrets.SPRING_MAIL_USERNAME}}
-          SPRING_MAIL_PASSWORD: ${{secrets.SPRING_MAIL_PASSWORD}}
-          SECURITY_JWT_SECRET_KEY: ${{secrets.SECURITY_JWT_SECRET_KEY}}
-          SECURITY_JWT_EXPIRATION_TIME: ${{secrets.SECURITY_JWT_EXPIRATION_TIME}}
-          SECURITY_JWT_REFRESH_TOKEN_EXPIRATION: ${{secrets.SECURITY_JWT_REFRESH_TOKEN_EXPIRATION}}
-          SPRING_SECURITY_USER_NAME: ${{secrets.SPRING_SECURITY_USER_NAME}}
-          SPRING_SECURITY_USER_PASSWORD: ${{secrets.SPRING_SECURITY_USER_PASSWORD}}
+          SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
+          SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
+          SPRING_MAIL_USERNAME: ${{ secrets.SPRING_MAIL_USERNAME }}
+          SPRING_MAIL_PASSWORD: ${{ secrets.SPRING_MAIL_PASSWORD }}
+          SECURITY_JWT_SECRET_KEY: ${{ secrets.SECURITY_JWT_SECRET_KEY }}
+          SECURITY_JWT_EXPIRATION_TIME: ${{ secrets.SECURITY_JWT_EXPIRATION_TIME }}
+          SECURITY_JWT_REFRESH_TOKEN_EXPIRATION: ${{ secrets.SECURITY_JWT_REFRESH_TOKEN_EXPIRATION }}
+          SPRING_SECURITY_USER_NAME: ${{ secrets.SPRING_SECURITY_USER_NAME }}
+          SPRING_SECURITY_USER_PASSWORD: ${{ secrets.SPRING_SECURITY_USER_PASSWORD }}
+          SMB_SERVER_ADDRESS: ${{ secrets.SMB_SERVER_ADDRESS }}
+          SMB_SERVER_USERNAME: ${{ secrets.SMB_SERVER_USERNAME }}
+          SMB_SERVER_PASSWORD: ${{ secrets.SMB_SERVER_PASSWORD }}
         run: |
-         # Deploy the WAR file using curl
-          Invoke-WebRequest -Uri "http://103.127.31.155:8080/manager/text/deploy?path=/nestNavigate-0.0.1-SNAPSHOT&update=true" `
-                  -Credential (New-Object PSCredential("root", (ConvertTo-SecureString "root" -AsPlainText -Force))) `
-                  -Method Put `
-                  -InFile "target/nestNavigate-0.0.1-SNAPSHOT.war"
+          # Export the environment variables to make them available for the Tomcat deployment
+          export SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}
+          export SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          export SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          export SPRING_MAIL_HOST=${{ secrets.SPRING_MAIL_HOST }}
+          export SPRING_MAIL_PORT=${{ secrets.SPRING_MAIL_PORT }}
+          export SPRING_MAIL_USERNAME=${{ secrets.SPRING_MAIL_USERNAME }}
+          export SPRING_MAIL_PASSWORD=${{ secrets.SPRING_MAIL_PASSWORD }}
+          export SECURITY_JWT_SECRET_KEY=${{ secrets.SECURITY_JWT_SECRET_KEY }}
+          export SECURITY_JWT_EXPIRATION_TIME=${{ secrets.SECURITY_JWT_EXPIRATION_TIME }}
+          export SECURITY_JWT_REFRESH_TOKEN_EXPIRATION=${{ secrets.SECURITY_JWT_REFRESH_TOKEN_EXPIRATION }}
+          export SPRING_SECURITY_USER_NAME=${{ secrets.SPRING_SECURITY_USER_NAME }}
+          export SPRING_SECURITY_USER_PASSWORD=${{ secrets.SPRING_SECURITY_USER_PASSWORD }}
+          export SMB_SERVER_ADDRESS=${{ secrets.SMB_SERVER_ADDRESS }}
+          export SMB_SERVER_USERNAME=${{ secrets.SMB_SERVER_USERNAME }}
+          export SMB_SERVER_PASSWORD=${{ secrets.SMB_SERVER_PASSWORD }}
+
+          # Deploy the WAR file using curl (appropriate for Ubuntu)
+          curl -u "root:root" -T "target/nestNavigate-0.0.1-SNAPSHOT.war" \
+            "http://103.127.31.155:8080/manager/text/deploy?path=/nestNavigate-0.0.1-SNAPSHOT&update=true"
