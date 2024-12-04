@@ -56,6 +56,7 @@ public class PropertyMapper {
         dto.setMedia(property.getMedia());
         dto.setStatus(property.getStatus());
         dto.setIsFeatured(property.getIsFeatured());
+        dto.setAmenities(property.getAmenities());
 
         // Mapping fields specific to Furniture and Directions
         dto.setFurnitureStatus(property.getFurnitureStatus());

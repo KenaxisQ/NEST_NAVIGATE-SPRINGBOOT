@@ -35,6 +35,7 @@ public class AggregatePropertyDto {
     private String media;
     private PropertyStatus status;
     private Boolean isFeatured = false;
+    private String amenities;
 
     // Fields from PgDto
     private Furniture furnitureStatus;

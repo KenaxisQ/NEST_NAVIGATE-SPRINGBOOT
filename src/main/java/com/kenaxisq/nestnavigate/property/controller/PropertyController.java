@@ -50,11 +50,11 @@ public class PropertyController {
         Property property = propertyService.postProperty(propertyDto, userId);
         return ResponseEntity.ok(ResponseBuilder.success(property, "Property listed Successfully"));
     }
-//        @PutMapping("/update")
-//        public ResponseEntity<ApiResponse<Property>> updateProperty (@RequestBody Property property) throws ApiException{
-//        Property propertyToUpdate = propertyService.updateProperty(property);
-//        return ResponseEntity.ok(ResponseBuilder.success(propertyToUpdate,"Property Updated Successfully"));
-//        }
+        @PutMapping("/update")
+        public ResponseEntity<ApiResponse<Property>> updateProperty (@RequestBody Property property) throws ApiException{
+        Property propertyToUpdate = propertyService.updateProperty(property);
+        return ResponseEntity.ok(ResponseBuilder.success(propertyToUpdate,"Property Updated Successfully"));
+        }
 
         @DeleteMapping("/delete/{id}")
         public ResponseEntity<ApiResponse<String>> deleteProperty (@PathVariable String id) throws ApiException{

@@ -22,6 +22,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -108,115 +109,33 @@ public class PropertyServiceImpl implements PropertyService{
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<Property> searchProperties(PropertyFilterDto filterDto) {
+        return propertyRepository.findAll(propertySpecification.getPropertiesWithFilters(filterDto));
+    }
+
     @Override
     public Property updateProperty(Property property) {
         try {
+            if(property.getId()==null || property.getId().isEmpty())
+            {
+                throw new ApiException("ERR_PROPERTY_UPDATE",
+                        "Property Id is required!!", HttpStatus.BAD_REQUEST);
+            }
             Optional<Property> propertyOptional = propertyRepository.findById(property.getId());
             if (!propertyOptional.isPresent()) {
                 throw new ApiException("ERR_PROPERTY_NOT_FOUND",
                         "No Property with Id: " + property.getId() + " found!!", HttpStatus.NOT_FOUND);
             }
             Property existingProperty = propertyOptional.get();
-
-            if (property.getTitle() != null) {
-                existingProperty.setTitle(property.getTitle());
-            }
-            if (property.getType() != null) {
-                existingProperty.setType(property.getType());
-            }
-            if (property.getPropertyCategory() != null) {
+            boolean categoryChanged = !existingProperty.getPropertyCategory().equals(property.getPropertyCategory());
+            existingProperty = updateNonNullFields(existingProperty, property);
+            if (categoryChanged) {
+                validatePropertyDto(PropertyDtoMapper.mapPropertyToDto(property));
                 existingProperty.setPropertyCategory(property.getPropertyCategory());
             }
-            if (property.getFacing() != null) {
-                existingProperty.setFacing(property.getFacing());
-            }
-            if (property.getPropertyListingFor() != null) {
-                existingProperty.setPropertyListingFor(property.getPropertyListingFor());
-            }
-            if (property.getProjectName() != null) {
-                existingProperty.setProjectName(property.getProjectName());
-            }
-//            if (property.getSubProperty() != null) {
-//                existingProperty.setSubProperty(property.getSubProperty());
-//            }
-            if (property.getFurnitureStatus() != null) {
-                existingProperty.setFurnitureStatus(property.getFurnitureStatus());
-            }
-            if (property.getFurnitureStatusDescription() != null) {
-                existingProperty.setFurnitureStatusDescription(property.getFurnitureStatusDescription());
-            }
-            if (property.getDescription() != null) {
-                existingProperty.setDescription(property.getDescription());
-            }
-            if (property.getSuperBuiltupArea() != null) {
-                existingProperty.setSuperBuiltupArea(property.getSuperBuiltupArea());
-            }
-            if (property.getCarpetArea() != null) {
-                existingProperty.setCarpetArea(property.getCarpetArea());
-            }
-            if (property.getPrice() != null) {
-                existingProperty.setPrice(property.getPrice());
-            }
-            if (property.getAdvance() != null) {
-                existingProperty.setAdvance(property.getAdvance());
-            }
-            if (property.getIsNegotiable() != null) {
-                existingProperty.setIsNegotiable(property.getIsNegotiable());
-            }
-            if (property.getStatus() != null) {
-                existingProperty.setStatus(property.getStatus());
-            }
-            if (property.getIsFeatured() != null) {
-                existingProperty.setIsFeatured(property.getIsFeatured());
-            }
-            if (property.getListedDate() != null) {
-                existingProperty.setListedDate(property.getListedDate());
-            }
-            if (property.getUpdatedDate() != null) {
-                existingProperty.setUpdatedDate(property.getUpdatedDate());
-            }
-            if (property.getExpiryDate() != null) {
-                existingProperty.setExpiryDate(property.getExpiryDate());
-            }
-            if (property.getListedby() != null) {
-                existingProperty.setListedby(property.getListedby());
-            }
-            if (property.getPrimaryContact() != null) {
-                existingProperty.setPrimaryContact(property.getPrimaryContact());
-            }
-            if (property.getState() != null) {
-                existingProperty.setState(property.getState());
-            }
-            if (property.getCountry() != null) {
-                existingProperty.setCountry(property.getCountry());
-            }
-            if (property.getRevenueDivision() != null) {
-                existingProperty.setRevenueDivision(property.getRevenueDivision());
-            }
-            if (property.getMandal() != null) {
-                existingProperty.setMandal(property.getMandal());
-            }
-            if (property.getVillage() != null) {
-                existingProperty.setVillage(property.getVillage());
-            }
-            if (property.getZip() != null) {
-                existingProperty.setZip(property.getZip());
-            }
-            if (property.getLongitude() != null) {
-                existingProperty.setLongitude(property.getLongitude());
-            }
-            if (property.getLatitude() != null) {
-                existingProperty.setLatitude(property.getLatitude());
-            }
-            if (property.getViews() != 0) {
-                existingProperty.setViews(property.getViews());
-            }
-            if (property.getLikes() != 0) {
-                existingProperty.setLikes(property.getLikes());
-            }
-
-            Property updatedProperty = propertyRepository.save(existingProperty);
-            return updatedProperty;
+            existingProperty.setUpdatedDate(LocalDateTime.now());
+            return propertyRepository.save(existingProperty);
         } catch (ApiException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -260,6 +179,49 @@ public class PropertyServiceImpl implements PropertyService{
                     "Error saving property: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+    private Property updateNonNullFields(Property existingProperty, Property newPropertyData) {
+        if (newPropertyData.getTitle() != null) existingProperty.setTitle(newPropertyData.getTitle());
+        if (newPropertyData.getType() != null) existingProperty.setType(newPropertyData.getType());
+        if (newPropertyData.getFacing() != null) existingProperty.setFacing(newPropertyData.getFacing());
+        if (newPropertyData.getPropertyListingFor() != null) existingProperty.setPropertyListingFor(newPropertyData.getPropertyListingFor());
+        if (newPropertyData.getProjectName() != null) existingProperty.setProjectName(newPropertyData.getProjectName());
+        if (newPropertyData.getFurnitureStatus() != null) existingProperty.setFurnitureStatus(newPropertyData.getFurnitureStatus());
+        if (newPropertyData.getFurnitureStatusDescription() != null) existingProperty.setFurnitureStatusDescription(newPropertyData.getFurnitureStatusDescription());
+        if (newPropertyData.getDescription() != null) existingProperty.setDescription(newPropertyData.getDescription());
+        if (newPropertyData.getSuperBuiltupArea() != null) existingProperty.setSuperBuiltupArea(newPropertyData.getSuperBuiltupArea());
+        if (newPropertyData.getCarpetArea() != null) existingProperty.setCarpetArea(newPropertyData.getCarpetArea());
+        if (newPropertyData.getPrice() != null) existingProperty.setPrice(newPropertyData.getPrice());
+        if (newPropertyData.getAdvance() != null) existingProperty.setAdvance(newPropertyData.getAdvance());
+        if (newPropertyData.getLength() != null) existingProperty.setLength(newPropertyData.getLength());
+        if (newPropertyData.getWidth() != null) existingProperty.setWidth(newPropertyData.getWidth());
+        if (newPropertyData.getPoojaRoom() != null) existingProperty.setPoojaRoom(newPropertyData.getPoojaRoom());
+        if (newPropertyData.getNoOfBedrooms() != null) existingProperty.setNoOfBedrooms(newPropertyData.getNoOfBedrooms());
+        if (newPropertyData.getNoOfBathrooms() != null) existingProperty.setNoOfBathrooms(newPropertyData.getNoOfBathrooms());
+        if (newPropertyData.getNoOfRooms() != null) existingProperty.setNoOfRooms(newPropertyData.getNoOfRooms());
+        if (newPropertyData.getNoOfBalconies() != null) existingProperty.setNoOfBalconies(newPropertyData.getNoOfBalconies());
+        if (newPropertyData.getIsNegotiable() != null) existingProperty.setIsNegotiable(newPropertyData.getIsNegotiable());
+        if (newPropertyData.getStatus() != null) existingProperty.setStatus(newPropertyData.getStatus());
+        if (newPropertyData.getIsFeatured() != null) existingProperty.setIsFeatured(newPropertyData.getIsFeatured());
+        if (newPropertyData.getPrimaryContact() != null) existingProperty.setPrimaryContact(newPropertyData.getPrimaryContact());
+        if (newPropertyData.getSecondaryContact() != null) existingProperty.setSecondaryContact(newPropertyData.getSecondaryContact());
+        if (newPropertyData.getState() != null) existingProperty.setState(newPropertyData.getState());
+        if (newPropertyData.getCountry() != null) existingProperty.setCountry(newPropertyData.getCountry());
+        if (newPropertyData.getRevenueDivision() != null) existingProperty.setRevenueDivision(newPropertyData.getRevenueDivision());
+        if (newPropertyData.getMandal() != null) existingProperty.setMandal(newPropertyData.getMandal());
+        if (newPropertyData.getVillage() != null) existingProperty.setVillage(newPropertyData.getVillage());
+        if (newPropertyData.getZip() != null) existingProperty.setZip(newPropertyData.getZip());
+        if (newPropertyData.getAddress() != null) existingProperty.setAddress(newPropertyData.getAddress());
+        if (newPropertyData.getLongitude() != null) existingProperty.setLongitude(newPropertyData.getLongitude());
+        if (newPropertyData.getLatitude() != null) existingProperty.setLatitude(newPropertyData.getLatitude());
+        if (newPropertyData.getMedia() != null) existingProperty.setMedia(newPropertyData.getMedia());
+        if (newPropertyData.getMoveInDate() != null) existingProperty.setMoveInDate(newPropertyData.getMoveInDate());
+        if (newPropertyData.getAmenities() != null) existingProperty.setAmenities(newPropertyData.getAmenities());
+        if(newPropertyData.getLikes() != null) existingProperty.setLikes(newPropertyData.getLikes());
+        if(newPropertyData.getViews() != null) existingProperty.setViews(newPropertyData.getViews());
+        return existingProperty;
+    }
+
     private Property validateAndReturnPropertyEntity(AggregatePropertyDto propertyDto) throws ApiException {
         if (propertyDto.getPropertyCategory().equalsIgnoreCase("PG")) {
             PgDto pg = PropertyDtoMapper.mapToPgDto(propertyDto);
@@ -281,11 +243,6 @@ public class PropertyServiceImpl implements PropertyService{
             throw new ApiException("ERR_INVALID_PROPERTY_CATEGORY",
                     "Invalid Property Category: " + propertyDto.getPropertyCategory(), HttpStatus.BAD_REQUEST);
         }
-    }
-
-    @Transactional(readOnly = true)
-    public List<Property> searchProperties(PropertyFilterDto filterDto) {
-        return propertyRepository.findAll(propertySpecification.getPropertiesWithFilters(filterDto));
     }
 
     private static <T> void validatePropertyDto(T dto) throws ApiException {

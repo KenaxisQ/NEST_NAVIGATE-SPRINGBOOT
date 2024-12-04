@@ -107,13 +107,15 @@ public class Property {
     @Column(nullable = true)
     private String latitude;
     @Column(nullable = true)
-    private int views=0;
+    private Integer views=0;
     @Column(nullable = true)
-    private int likes=0;
+    private Integer likes=0;
     @Column(nullable = true)
     private String media;
     @Column(nullable = true)
     private LocalDateTime moveInDate;
+    @Column(nullable = true)
+    private String amenities;
 
     public void incrementViewsOfAProperty() {
        setViews(getViews()+1);

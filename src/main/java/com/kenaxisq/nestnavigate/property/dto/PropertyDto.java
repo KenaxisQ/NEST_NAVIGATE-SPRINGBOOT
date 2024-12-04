@@ -69,4 +69,6 @@ public class PropertyDto {
 
     @RequiredField(message = "Featured status is required")
     private Boolean isFeatured = false;
+
+    private String amenities;
 }
