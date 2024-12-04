@@ -49,6 +49,10 @@ public class UserController {
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(ResponseBuilder.success(userService.getUsers(),"Users Retrieved Successfully").getData());
     }
+    @PutMapping("/addToFavourites/{userId}")
+    public ResponseEntity<ApiResponse<String>> addToFavourites(@PathVariable String userId, @RequestBody String wishList) {
+        return ResponseEntity.ok(ResponseBuilder.success(userService.updateFavourites(userId, wishList)));
+    }
 
 }
 //class-level requirement

@@ -209,6 +209,30 @@ public class UserServiceImpl implements UserService{
 //            return String.format("Property Listing Limit for User %s updated to: %d",user.getName(),user.getProperties_listing_limit());
     }
 
+    @Override
+    public String updateFavourites(String userId, String properties) {
+        User user = getUser(userId);
+        user.setFavourites(properties);
+        return String.format("Favourites %s updated successfully for user %s", properties, user.getName());
+    }
+
+    @Override
+    public List<User> getUsersByIds(List<String> ids) {
+        try{
+            List<User> users = userRepository.findUsersByIds(ids);
+            if(users.isEmpty()){
+                throw new ApiException("USERS_EMPTY", "No Users found", HttpStatus.NOT_FOUND);
+            }
+            return users;
+        }
+        catch (ApiException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ApiException("ERR_USERS_FETCH", e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
 
     private void updateNonNullFields(User source, User target) {
         if (StringUtils.hasText(source.getName())) target.setName(source.getName());

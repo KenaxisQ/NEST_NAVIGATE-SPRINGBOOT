@@ -12,7 +12,8 @@ import java.util.List;
 @Getter
 @Setter
 public class PropertyFilterDto {
-    private List<String> requiredProperties;
+    private List<String> requiredPropertiesIds;
+    private List<String> userIds;
     private String searchKeyword;
     private String type;
     private String propertyCategory;

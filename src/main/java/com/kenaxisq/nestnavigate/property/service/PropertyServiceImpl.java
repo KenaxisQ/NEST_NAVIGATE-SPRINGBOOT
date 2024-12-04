@@ -31,12 +31,14 @@ public class PropertyServiceImpl implements PropertyService{
 
     private final PropertyRepository propertyRepository;
     private final UserService userService;
+    private final PropertySpecification propertySpecification;
     private static final Logger logger = LoggerFactory.getLogger(Property.class);
     @Autowired
     public PropertyServiceImpl(PropertyRepository propertyRepository,
-                               UserService userService) {
+                               UserService userService, PropertySpecification propertySpecification) {
         this.propertyRepository = propertyRepository;
         this.userService = userService;
+        this.propertySpecification = propertySpecification;
     }
 
     @Override
@@ -283,7 +285,7 @@ public class PropertyServiceImpl implements PropertyService{
 
     @Transactional(readOnly = true)
     public List<Property> searchProperties(PropertyFilterDto filterDto) {
-        return propertyRepository.findAll(PropertySpecification.getPropertiesWithFilters(filterDto));
+        return propertyRepository.findAll(propertySpecification.getPropertiesWithFilters(filterDto));
     }
 
     private static <T> void validatePropertyDto(T dto) throws ApiException {
