@@ -39,13 +39,13 @@ public class PropertyController {
         properties = propertyService.getAllProperties();
         return ResponseEntity.ok(ResponseBuilder.success(properties,"Properties Retrieved Successfully"));
         }
-        @PutMapping("/filter")
+        @PostMapping("/filter")
         public ResponseEntity<ApiResponse<List<Property>>> getFilteredProperties(@RequestBody PropertyFilterDto filterDto){
         List<Property> properties = new ArrayList<>();
         properties = propertyService.searchProperties(filterDto);
         return ResponseEntity.ok(ResponseBuilder.success(properties,"Properties Retrieved Successfully"));
         }
-    @PostMapping("/create")
+       @PostMapping("/create")
     public ResponseEntity<ApiResponse<Property>> createProperty (@RequestBody AggregatePropertyDto propertyDto, @RequestParam String userId) throws ApiException {
         Property property = propertyService.postProperty(propertyDto, userId);
         return ResponseEntity.ok(ResponseBuilder.success(property, "Property listed Successfully"));
