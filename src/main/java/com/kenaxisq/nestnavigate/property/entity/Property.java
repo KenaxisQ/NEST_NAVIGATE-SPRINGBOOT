@@ -116,7 +116,19 @@ public class Property {
     private LocalDateTime moveInDate;
     @Column(nullable = true)
     private String amenities;
+    @Column(nullable = false)
+    private String propertyApprovalStatus;
 
+    public void initializeApprovalStatus(String role) {
+        switch (role) {
+            case "ADMIN":
+                this.propertyApprovalStatus = "Approved";
+                break;
+            default:
+                this.propertyApprovalStatus = "Awaiting Approval";
+                break;
+        }
+    }
     public void incrementViewsOfAProperty() {
        setViews(getViews()+1);
     }

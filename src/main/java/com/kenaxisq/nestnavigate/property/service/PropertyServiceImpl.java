@@ -163,12 +163,15 @@ public class PropertyServiceImpl implements PropertyService{
                 throw new ApiException(ErrorCodes.INVALID_PROPERTY_CATEGORY);
             }
             Property property = validateAndReturnPropertyEntity(propertyDto);
-            property.setListedby(getAuthorityOfUser(userId).toString());
-            property.setOwner(userService.getUser(userId));
+            User owner = userService.getUser(userId);
+            property.setListedby(owner.getRole().toString());
+            property.setOwner(owner);
+            property.initializeApprovalStatus(owner.getRole().toString());
             logger.info("Saving property: " + property.toString());
             Property savedProperty = propertyRepository.save(property);
-            userService.getUser(userId).setProperties_listed(userService.getUser(userId).getProperties_listed()+1);
-            userService.getUser(userId).setProperties_listing_limit(userService.getUser(userId).getProperties_listing_limit()-1);
+            owner.setProperties_listed(owner.getProperties_listed()+1);
+            owner.setProperties_listing_limit(owner.getProperties_listing_limit()-1);
+            userService.updateUser(owner);
             return savedProperty;
         }
         catch (ApiException ex){
@@ -219,6 +222,7 @@ public class PropertyServiceImpl implements PropertyService{
         if (newPropertyData.getAmenities() != null) existingProperty.setAmenities(newPropertyData.getAmenities());
         if(newPropertyData.getLikes() != null) existingProperty.setLikes(newPropertyData.getLikes());
         if(newPropertyData.getViews() != null) existingProperty.setViews(newPropertyData.getViews());
+        if(newPropertyData.getPropertyApprovalStatus()!=null) existingProperty.setPropertyApprovalStatus(newPropertyData.getPropertyApprovalStatus());
         return existingProperty;
     }
 
