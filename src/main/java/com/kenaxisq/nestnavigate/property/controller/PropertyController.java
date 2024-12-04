@@ -39,7 +39,7 @@ public class PropertyController {
         properties = propertyService.getAllProperties();
         return ResponseEntity.ok(ResponseBuilder.success(properties,"Properties Retrieved Successfully"));
         }
-        @GetMapping("/filter")
+        @PutMapping("/filter")
         public ResponseEntity<ApiResponse<List<Property>>> getFilteredProperties(@RequestBody PropertyFilterDto filterDto){
         List<Property> properties = new ArrayList<>();
         properties = propertyService.searchProperties(filterDto);

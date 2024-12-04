@@ -213,6 +213,7 @@ public class UserServiceImpl implements UserService{
     public String updateFavourites(String userId, String properties) {
         User user = getUser(userId);
         user.setFavourites(properties);
+        userRepository.save(user);
         return String.format("Favourites %s updated successfully for user %s", properties, user.getName());
     }
 
