@@ -7,10 +7,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
 public class PropertyFilterDto {
+    private List<String> requiredProperties;
     private String searchKeyword;
     private String type;
     private String propertyCategory;

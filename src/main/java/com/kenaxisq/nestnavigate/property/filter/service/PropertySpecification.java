@@ -15,6 +15,9 @@ public class PropertySpecification {
     public static Specification<Property> getPropertiesWithFilters(PropertyFilterDto filterDto) {
         return (Root<Property> root, CriteriaQuery<?> query, CriteriaBuilder builder) -> {
             List<Predicate> predicates = new ArrayList<>();
+            if(filterDto.getRequiredProperties() != null && !filterDto.getRequiredProperties().isEmpty()) {
+                predicates.add(root.get("id").in(filterDto.getRequiredProperties()));
+            }
             if (filterDto.getType() != null) {
                 predicates.add(builder.equal(root.get("type"), filterDto.getType()));
             }
