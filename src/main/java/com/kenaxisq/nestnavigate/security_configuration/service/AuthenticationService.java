@@ -1,5 +1,7 @@
 package com.kenaxisq.nestnavigate.security_configuration.service;
 
+import com.kenaxisq.nestnavigate.registerMail.entity.VerifyUserMail;
+import com.kenaxisq.nestnavigate.registerMail.service.VerifyUserMailService;
 import com.kenaxisq.nestnavigate.security_configuration.dto.*;
 import com.kenaxisq.nestnavigate.user.entity.User;
 import com.kenaxisq.nestnavigate.user.repository.UserRepository;
@@ -31,7 +33,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
-
+    private final VerifyUserMailService verifyUserMailService;
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     @Autowired
@@ -40,13 +42,15 @@ public class AuthenticationService {
                                  JwtService jwtService,
                                  AuthenticationManager authenticationManager,
                                  UserService userService,
-                                 EmailService emailService) {
+                                 EmailService emailService,
+                                 VerifyUserMailService verifyUserMailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.emailService = emailService;
+        this.verifyUserMailService = verifyUserMailService;
     }
 
     public ResponseEntity<?> login(String identifier, String password) {
@@ -150,11 +154,12 @@ public class AuthenticationService {
 
     public ResponseEntity<?> register(RegisterUserDto user) {
         try {
+           VerifyUserMail verifyUserMail = verifyUserMailService.getVerifyUserMailByEmail(user.getEmail());
+           if(!verifyUserMail.isVerified())
+               throw new ApiException("MAIL_NOT_VERIFIED", "Please verify your mail id", HttpStatus.BAD_REQUEST);
             validateRegisterUserDto(user);
-
             Optional<User> existingUserByEmail = userRepository.findByEmail(user.getEmail());
             Optional<User> existingUserByPhone = userRepository.findByPhone(user.getPhone());
-
             if (existingUserByEmail.isPresent() || existingUserByPhone.isPresent()) {
                 User foundUser = existingUserByEmail.orElseGet(existingUserByPhone::get);
 
@@ -172,7 +177,7 @@ public class AuthenticationService {
             User savedUser = userRepository.save(createuser);
 
             // Send the verification email
-            sendVerificationCodeToEmail(savedUser,"REGISTRATION");
+//            sendVerificationCodeToEmail(savedUser,"REGISTRATION");
             return ResponseEntity.ok(ResponseBuilder.success(savedUser, "Registration successful"));
         } catch (ApiException e) {
             logger.error("Registration error: {}", e.getMessage());

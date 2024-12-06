@@ -1,9 +1,14 @@
 package com.kenaxisq.nestnavigate.security_configuration.controller;
 
+import com.kenaxisq.nestnavigate.registerMail.entity.VerifyUserMail;
+import com.kenaxisq.nestnavigate.registerMail.service.VerifyUserMailService;
 import com.kenaxisq.nestnavigate.security_configuration.dto.*;
 import com.kenaxisq.nestnavigate.security_configuration.service.AuthenticationService;
 
 import com.kenaxisq.nestnavigate.user.dto.ResetPasswordDto;
+import com.kenaxisq.nestnavigate.utils.ApiResponse;
+import com.kenaxisq.nestnavigate.utils.ResponseBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,8 +16,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class authenticationController {
     private final AuthenticationService authenticationService;
-    public authenticationController(AuthenticationService authenticationService) {
+    private final VerifyUserMailService verifyUserMailService;
+    @Autowired
+    public authenticationController(AuthenticationService authenticationService,
+                                    VerifyUserMailService verifyUserMailService) {
         this.authenticationService = authenticationService;
+        this.verifyUserMailService = verifyUserMailService;
     }
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginUserDto loginUserDto) {
@@ -23,9 +32,14 @@ public class authenticationController {
         return authenticationService.register(user);
     }
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyUser(@RequestBody VerifyUserDto user) {
-        return authenticationService.verifyUser(user.getIdentifier(),user.getVerificationCode());
+    public ResponseEntity<ApiResponse<String>> verifyUser(@RequestBody String email) {
+        return ResponseEntity.ok(ResponseBuilder.success(verifyUserMailService.verifyUserMail(email), "User Verified Successfully"));
     }
+    @PostMapping("/validateUserEmail")
+    public ResponseEntity<ApiResponse<String>> validateUserEmail(@RequestBody VerifyUserDto verifyUserDto) {
+        return ResponseEntity.ok(ResponseBuilder.success(verifyUserMailService.isVerificationCodeValid(verifyUserDto.getIdentifier(),verifyUserDto.getVerificationCode()), "User Verified Successfully"));
+    }
+
     @PostMapping("/loginWithOTP")
     public ResponseEntity<?> loginWithOTP(@RequestBody LoginWithOTPDto loginWithOTPDto) {
         return authenticationService.loginWithOtp(loginWithOTPDto.getIdentifier());
