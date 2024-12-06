@@ -62,8 +62,7 @@ public class AuthenticationService {
             if (userService.validatePassword(user, password)) {
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
-                jwtService.saveToken(accessToken, user, false);
-                jwtService.saveToken(refreshToken, user, true);
+                jwtService.saveToken(accessToken, refreshToken, user);
                 String message = "Login successful";
                 if(!user.isUserVerified()) message = "Login successful, Please verify your account";
                 AuthenticationResponse response = new AuthenticationResponse(accessToken, refreshToken, message);
@@ -136,6 +135,7 @@ public class AuthenticationService {
             User user = userService.findByEmail(email);
             String accessToken = jwtService.generateAccessToken(user);
             String refreshToken = jwtService.generateRefreshToken(user);
+            jwtService.saveToken(accessToken, refreshToken, user);
             return ResponseEntity.ok(ResponseBuilder.success(new AuthenticationResponse(accessToken, refreshToken, "Login Successful")));
         }
         catch (ApiException e) {
@@ -190,7 +190,7 @@ public class AuthenticationService {
             if (jwtService.isValidRefreshToken(refreshToken, user)) {
                 String newAccessToken = jwtService.generateAccessToken(user);
                 String newRefreshToken = jwtService.generateRefreshToken(user);
-                jwtService.saveToken(newAccessToken, user, false);
+                jwtService.saveToken(newAccessToken, newRefreshToken, user);
                 AuthenticationResponse response = new AuthenticationResponse(newAccessToken, newRefreshToken, "Token refreshed successfully");
                 return ResponseEntity.ok(ResponseBuilder.success(response));
             } else {
