@@ -61,7 +61,7 @@ public class VerifyMailServiceImpl implements VerifyUserMailService {
     public VerifyUserMail getVerifyUserMailByEmail(String email) {
         Optional<VerifyUserMail> optionalVerifyUserMail = verifyUserMailRepository.findById(email.toLowerCase());
         if (optionalVerifyUserMail.isEmpty()) {
-            throw new ApiException("INVALID_MAIL", "Invalid Mail ID", HttpStatus.BAD_REQUEST);
+            throw new ApiException("INVALID_MAIL", "Invalid Mail ID, Kindly Verify Your Mail Before Registration.", HttpStatus.BAD_REQUEST);
         }
         return optionalVerifyUserMail.get();
     }
