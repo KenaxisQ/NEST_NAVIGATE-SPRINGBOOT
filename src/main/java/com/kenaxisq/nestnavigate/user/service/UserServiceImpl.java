@@ -34,9 +34,9 @@ public class UserServiceImpl implements UserService{
     public User findByEmailOrPhone(String identifier) {
         Optional<User> user;
         if (identifier.contains("@")) {
-            user = userRepository.findByEmail(identifier);
+            user = userRepository.findByEmail(identifier.toLowerCase().trim());
         } else {
-            user = userRepository.findByPhone(identifier);
+            user = userRepository.findByPhone(identifier.trim());
         }
         logger.info("User found: {}", user.isPresent());
         return user.orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND));
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService{
     @Override
     public User findByEmail(String email) {
         Optional<User> user;
-        user = userRepository.findByEmail(email);
+        user = userRepository.findByEmail(email.toLowerCase().trim());
         logger.info("User found: {}", user.toString());
         return user.orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND));
     }
@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService{
             User existingUser = optionalExistingUser.get();
 
             if (!StringUtils.hasText(user.getEmail())) {
-                user.setEmail(existingUser.getEmail());
+                user.setEmail(existingUser.getEmail().toLowerCase().trim());
             }
 
             // Validate phone number for uniqueness

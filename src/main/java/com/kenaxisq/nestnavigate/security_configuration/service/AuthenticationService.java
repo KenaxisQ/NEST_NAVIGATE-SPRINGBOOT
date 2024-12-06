@@ -171,7 +171,7 @@ public class AuthenticationService {
                 throw new ApiException(ErrorCodes.USER_ALREADY_EXISTS.getCode(), "User already exists with this email or phone", HttpStatus.CONFLICT);
             }
 
-            User createuser = new User(user.getName(), user.getEmail(),user.getPhone(),user.getPassword());
+            User createuser = new User(user.getName(), user.getEmail().toLowerCase(),user.getPhone(),user.getPassword());
             createuser.setPassword(passwordEncoder.encode(user.getPassword()));
             if (user.getProfilePicture()!=null)createuser.setProfilePic(user.getProfilePicture());
             User savedUser = userRepository.save(createuser);
