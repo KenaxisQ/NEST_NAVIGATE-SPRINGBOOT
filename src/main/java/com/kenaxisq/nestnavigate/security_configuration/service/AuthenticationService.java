@@ -79,9 +79,9 @@ public class AuthenticationService {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseBuilder.error(HttpStatus.UNAUTHORIZED, "Invalid credentials", ErrorCodes.INVALID_CREDENTIALS.getCode()));
     }
 
-    public ResponseEntity<?> loginWithOtp(String email) {
+    public ResponseEntity<?> loginWithOtp(String identifier) {
         try {
-            User user = userService.findByEmail(email);
+            User user = userService.findByEmailOrPhone(identifier);
             if (!user.isUserVerified())
                 throw new ApiException(ErrorCodes.USER_NOT_VERIFIED);
             sendVerificationCodeToEmail(user, "LOGIN_OTP");

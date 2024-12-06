@@ -28,7 +28,7 @@ public class authenticationController {
     }
     @PostMapping("/loginWithOTP")
     public ResponseEntity<?> loginWithOTP(@RequestBody LoginWithOTPDto loginWithOTPDto) {
-        return authenticationService.loginWithOtp(loginWithOTPDto.getEmail());
+        return authenticationService.loginWithOtp(loginWithOTPDto.getIdentifier());
     }
     @PostMapping("/validateEmailOtpLogin")
     public ResponseEntity<?> validateEmailOtpLogin(@RequestBody VerifyUserDto verifyUserDto) {
