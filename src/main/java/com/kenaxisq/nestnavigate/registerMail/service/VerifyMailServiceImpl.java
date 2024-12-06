@@ -59,7 +59,7 @@ public class VerifyMailServiceImpl implements VerifyUserMailService {
 
     @Override
     public VerifyUserMail getVerifyUserMailByEmail(String email) {
-        Optional<VerifyUserMail> optionalVerifyUserMail = verifyUserMailRepository.findById(email);
+        Optional<VerifyUserMail> optionalVerifyUserMail = verifyUserMailRepository.findById(email.toLowerCase());
         if (optionalVerifyUserMail.isEmpty()) {
             throw new ApiException("INVALID_MAIL", "Invalid Mail ID", HttpStatus.BAD_REQUEST);
         }
@@ -70,8 +70,7 @@ public class VerifyMailServiceImpl implements VerifyUserMailService {
         String subject = "Account Verification";
         String verificationCode = generateVerificationCode();
         LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(5);
-        verifyUserMailRepository.save(new VerifyUserMail(email, verificationCode, expiryTime,false));
-
+        verifyUserMailRepository.save(new VerifyUserMail(email.toLowerCase(), verificationCode, expiryTime, false));
         String htmlMessage = buildHtmlMessage(subject, verificationCode, expiryTime);
         emailService.sendVerificationEmail(email, subject, htmlMessage);
     }

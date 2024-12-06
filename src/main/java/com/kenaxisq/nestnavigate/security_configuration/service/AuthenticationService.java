@@ -154,8 +154,8 @@ public class AuthenticationService {
 
     public ResponseEntity<?> register(RegisterUserDto user) {
         try {
-           VerifyUserMail verifyUserMail = verifyUserMailService.getVerifyUserMailByEmail(user.getEmail());
-           if(!verifyUserMail.isVerified())
+           VerifyUserMail verifyUserMail = verifyUserMailService.getVerifyUserMailByEmail(user.getEmail().toLowerCase());
+           if(!verifyUserMail.getVerified())
                throw new ApiException("MAIL_NOT_VERIFIED", "Please verify your mail id", HttpStatus.BAD_REQUEST);
             validateRegisterUserDto(user);
             Optional<User> existingUserByEmail = userRepository.findByEmail(user.getEmail());

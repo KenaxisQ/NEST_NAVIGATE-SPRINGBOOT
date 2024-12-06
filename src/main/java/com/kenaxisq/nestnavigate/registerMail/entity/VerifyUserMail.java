@@ -24,5 +24,5 @@ public class VerifyUserMail {
     @Column(name = "verification_expiry")
     private LocalDateTime verificationExpiry;
     @Column(name = "verified")
-    private boolean verified;
+    private Boolean verified=false;
 }

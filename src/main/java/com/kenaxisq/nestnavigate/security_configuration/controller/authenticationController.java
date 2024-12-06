@@ -32,8 +32,8 @@ public class authenticationController {
         return authenticationService.register(user);
     }
     @PostMapping("/verify")
-    public ResponseEntity<ApiResponse<String>> verifyUser(@RequestBody String email) {
-        return ResponseEntity.ok(ResponseBuilder.success(verifyUserMailService.verifyUserMail(email), "User Verified Successfully"));
+    public ResponseEntity<ApiResponse<String>> verifyUser(@RequestBody LoginWithOTPDto loginWithOTPDto) {
+        return ResponseEntity.ok(ResponseBuilder.success(verifyUserMailService.verifyUserMail(loginWithOTPDto.getIdentifier()), "User Verified Successfully"));
     }
     @PostMapping("/validateUserEmail")
     public ResponseEntity<ApiResponse<String>> validateUserEmail(@RequestBody VerifyUserDto verifyUserDto) {
