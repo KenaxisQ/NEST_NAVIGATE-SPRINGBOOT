@@ -24,7 +24,7 @@ public class authenticationController {
     }
     @PostMapping("/verify")
     public ResponseEntity<?> verifyUser(@RequestBody VerifyUserDto user) {
-        return authenticationService.verifyUser(user.getEmail(),user.getVerificationCode());
+        return authenticationService.verifyUser(user.getIdentifier(),user.getVerificationCode());
     }
     @PostMapping("/loginWithOTP")
     public ResponseEntity<?> loginWithOTP(@RequestBody LoginWithOTPDto loginWithOTPDto) {
@@ -32,7 +32,7 @@ public class authenticationController {
     }
     @PostMapping("/validateEmailOtpLogin")
     public ResponseEntity<?> validateEmailOtpLogin(@RequestBody VerifyUserDto verifyUserDto) {
-        return authenticationService.validateEmailOtpLogin(verifyUserDto.getEmail(), verifyUserDto.getVerificationCode());
+        return authenticationService.validateEmailOtpLogin(verifyUserDto.getIdentifier(), verifyUserDto.getVerificationCode());
     }
     @PostMapping("/validateGoogleAuthLogin")
     public ResponseEntity<?> LoginWithGoogleAuth(@RequestBody TokenDto tokenDto) {

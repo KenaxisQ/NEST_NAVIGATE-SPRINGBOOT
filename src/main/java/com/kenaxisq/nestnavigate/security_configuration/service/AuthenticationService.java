@@ -95,13 +95,13 @@ public class AuthenticationService {
         }
     }
 
-    public ResponseEntity<ApiResponse<?>> validateEmailOtpLogin(String email, String otp) {
+    public ResponseEntity<ApiResponse<?>> validateEmailOtpLogin(String identifier, String otp) {
         try {
-            User user = userService.findByEmail(email);
-            if (!user.isUserVerified()) {
-                throw new ApiException(ErrorCodes.USER_NOT_VERIFIED);
-            }
+            User user = userService.findByEmailOrPhone(identifier);
             if (user.getVerificationCode().equals(otp)) {
+                if (!user.isUserVerified()) {
+                    user.setUserVerified(true);
+                }
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
                 return ResponseEntity.ok(ResponseBuilder.success(new AuthenticationResponse(accessToken, refreshToken, "Login Successful")));
