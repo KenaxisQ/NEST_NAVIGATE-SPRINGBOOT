@@ -61,7 +61,7 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:8080/NestNavigate"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:8080/NestNavigate","http://103.127.31.155:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 
