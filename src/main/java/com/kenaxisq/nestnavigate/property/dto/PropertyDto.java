@@ -10,6 +10,9 @@ import lombok.Setter;
 @Setter
 public class PropertyDto {
 
+    @RequiredField
+    private String id;
+
     @RequiredField(message = "Title is required")
     private String title;
 

@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 public class AggregatePropertyDto {
 
     // Fields from PropertyDto
+    private String id;
     private String title;
     private String type;
     private String propertyCategory;

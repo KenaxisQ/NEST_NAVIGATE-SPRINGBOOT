@@ -149,6 +149,8 @@ public class PropertyServiceImpl implements PropertyService{
         logger.info("Received Property Data: " + propertyDto.toString());
         try {
             userService.getUser(userId);
+            if(propertyRepository.findPropertyById(propertyDto.getId())!=null)
+                throw new ApiException("PROPERTY_ID_ALREADY_EXISTS","PropertyID: "+propertyDto.getId()+" already exists, try different id..",HttpStatus.BAD_REQUEST);
             if (userService.getUser(userId).getProperties_listing_limit() <= 0) {
                 throw new ApiException(ErrorCodes.PROPERTY_LISTING_LIMIT_EXCEEDED);
             }

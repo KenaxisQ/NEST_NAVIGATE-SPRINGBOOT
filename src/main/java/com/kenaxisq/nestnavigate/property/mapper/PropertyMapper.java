@@ -38,6 +38,7 @@ public class PropertyMapper {
         AggregatePropertyDto dto = new AggregatePropertyDto();
 
         // Mapping fields from Property to AggregatePropertyDto
+        dto.setId(property.getId());
         dto.setTitle(property.getTitle());
         dto.setType(property.getType());
         dto.setPropertyCategory(property.getPropertyCategory());

@@ -73,6 +73,7 @@ public class PropertyDtoMapper {
     }
 
     private static void mapCommonProperties(AggregatePropertyDto aggDto, PropertyDto propertyDto) {
+        propertyDto.setId(aggDto.getId());
         propertyDto.setTitle(aggDto.getTitle());
         propertyDto.setType(aggDto.getType());
         propertyDto.setPropertyCategory(aggDto.getPropertyCategory());
@@ -107,6 +108,7 @@ public class PropertyDtoMapper {
         }
 
         private static <T extends PropertyDto> T populateToRespectiveDto(Property property, T dto) {
+            dto.setId(property.getId());
             dto.setTitle(property.getTitle());
             dto.setType(property.getType());
             dto.setPropertyCategory(property.getPropertyCategory());
