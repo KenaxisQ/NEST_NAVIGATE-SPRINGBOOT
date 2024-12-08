@@ -80,6 +80,7 @@ public class User implements UserDetails {
         setPassword(password);
     }
 
+
     @PrePersist
     protected void onCreate() {
         initializeDefaults();

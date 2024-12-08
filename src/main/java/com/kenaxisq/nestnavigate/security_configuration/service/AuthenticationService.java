@@ -68,7 +68,7 @@ public class AuthenticationService {
                 String refreshToken = jwtService.generateRefreshToken(user);
                 jwtService.saveToken(accessToken, refreshToken, user);
                 String message = "Login successful";
-                if(!user.isUserVerified()) message = "Login successful, Please verify your account";
+//                if(!user.isUserVerified()) message = "Login successful, Please verify your account";
                 AuthenticationResponse response = new AuthenticationResponse(accessToken, refreshToken, message);
                 return ResponseEntity.ok(ResponseBuilder.success(response));
             }
@@ -85,8 +85,6 @@ public class AuthenticationService {
     public ResponseEntity<?> loginWithOtp(String identifier) {
         try {
             User user = userService.findByEmailOrPhone(identifier);
-            if (!user.isUserVerified())
-                throw new ApiException(ErrorCodes.USER_NOT_VERIFIED);
             sendVerificationCodeToEmail(user, "LOGIN_OTP");
            return ResponseEntity.ok(ResponseBuilder.success(user, "OTP sent successful!!"));
         } catch (ApiException e) {
@@ -160,24 +158,16 @@ public class AuthenticationService {
             validateRegisterUserDto(user);
             Optional<User> existingUserByEmail = userRepository.findByEmail(user.getEmail());
             Optional<User> existingUserByPhone = userRepository.findByPhone(user.getPhone());
-            if (existingUserByEmail.isPresent() || existingUserByPhone.isPresent()) {
-                User foundUser = existingUserByEmail.orElseGet(existingUserByPhone::get);
-
-                if (!foundUser.isUserVerified()) {
-                    sendVerificationCodeToEmail(foundUser, "REGISTRATION");
-                    return ResponseEntity.ok(ResponseBuilder.success(foundUser, "User already found, verification code sent to your email"));
-                }
-
-                throw new ApiException(ErrorCodes.USER_ALREADY_EXISTS.getCode(), "User already exists with this email or phone", HttpStatus.CONFLICT);
+            if (existingUserByEmail.isPresent()) {
+                throw new ApiException(ErrorCodes.USER_ALREADY_EXISTS.getCode(), "User already exists with this email", HttpStatus.CONFLICT);
             }
-
-            User createuser = new User(user.getName(), user.getEmail().toLowerCase(),user.getPhone(),user.getPassword());
-            createuser.setPassword(passwordEncoder.encode(user.getPassword()));
+            else if (existingUserByPhone.isPresent()) {
+                throw new ApiException(ErrorCodes.USER_ALREADY_EXISTS.getCode(), "User already exists with this phone", HttpStatus.CONFLICT);
+            }
+            User createuser = new User(user.getName(), user.getEmail().toLowerCase(),user.getPhone(),passwordEncoder.encode(user.getPassword()));
+            createuser.setUserVerified(verifyUserMail.getVerified());
             if (user.getProfilePicture()!=null)createuser.setProfilePic(user.getProfilePicture());
             User savedUser = userRepository.save(createuser);
-
-            // Send the verification email
-//            sendVerificationCodeToEmail(savedUser,"REGISTRATION");
             return ResponseEntity.ok(ResponseBuilder.success(savedUser, "Registration successful"));
         } catch (ApiException e) {
             logger.error("Registration error: {}", e.getMessage());
