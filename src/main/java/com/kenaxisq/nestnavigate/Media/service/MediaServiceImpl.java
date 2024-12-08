@@ -92,7 +92,9 @@ public class MediaServiceImpl implements MediaService {
         }
 
         logger.info("Successfully uploaded files.");
-        userService.updateProfilePicture(identifier, gson.toJson(uploadedFiles.get(0)) );
+        if(!isProperty) {
+            userService.updateProfilePicture(identifier, gson.toJson(uploadedFiles.get(0)));
+        }
         return uploadedFiles;
     }
 
