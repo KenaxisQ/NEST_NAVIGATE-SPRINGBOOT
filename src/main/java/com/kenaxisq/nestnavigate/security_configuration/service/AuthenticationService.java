@@ -244,7 +244,7 @@ public class AuthenticationService {
 
     }
 
-    public ResponseEntity<ApiResponse<String>> verifyAndResetPassword(VerifyForgotPasswordDto verifyForgotPasswordDto) {
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> verifyAndResetPassword(VerifyForgotPasswordDto verifyForgotPasswordDto) {
         try {
             Optional<User> optionalUser = userRepository.findByEmailOrPhone(verifyForgotPasswordDto.getIdentifier());
             User user = optionalUser.orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND.getCode(), "User not found", HttpStatus.NOT_FOUND));
@@ -254,8 +254,10 @@ public class AuthenticationService {
                 user.setVerificationCode(null);
                 user.setVerificationCodeExpiresAt(null);
                 userRepository.save(user);
+                String accessToken = jwtService.generateAccessToken(user);
+                String refreshToken = jwtService.generateRefreshToken(user);
+                return ResponseEntity.ok(ResponseBuilder.success(new AuthenticationResponse(accessToken, refreshToken, "Password reset successful")));
 
-                return ResponseEntity.ok(ResponseBuilder.success(null, "Password reset successful"));
             } else {
                 throw new ApiException(ErrorCodes.VALIDATION_FAILED.getCode(), "Invalid verification code or the code has expired", HttpStatus.BAD_REQUEST);
             }
