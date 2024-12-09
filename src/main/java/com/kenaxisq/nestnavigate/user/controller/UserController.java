@@ -24,8 +24,8 @@ public class UserController {
     }
 
     @GetMapping("/emailOrPhone/{identifier}")
-    public ResponseEntity<User> getUserByEmailOrPhone(@PathVariable String identifier) {
-        return ResponseEntity.ok(userService.findByEmailOrPhone(identifier));
+    public ResponseEntity<ApiResponse<User>> getUserByEmailOrPhone(@PathVariable String identifier) {
+        return ResponseEntity.ok(ResponseBuilder.success(userService.findByEmailOrPhone(identifier), "User Retrieved successfully"));
     }
 
     @PutMapping("/resetPassword")
