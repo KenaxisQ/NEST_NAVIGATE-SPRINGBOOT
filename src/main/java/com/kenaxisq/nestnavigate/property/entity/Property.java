@@ -22,8 +22,8 @@ import java.time.temporal.ChronoUnit;
 @AllArgsConstructor
 public class Property {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @GenericGenerator(name="uuid", strategy = "uuid")
+//    @GeneratedValue(strategy = GenerationType.UUID)
+//    @GenericGenerator(name="uuid", strategy = "uuid")
     private String id;
     @Column(nullable = false)
     private String title;
