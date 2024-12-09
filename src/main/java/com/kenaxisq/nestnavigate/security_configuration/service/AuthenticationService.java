@@ -168,7 +168,10 @@ public class AuthenticationService {
             createuser.setUserVerified(verifyUserMail.getVerified());
             if (user.getProfilePicture()!=null)createuser.setProfilePic(user.getProfilePicture());
             User savedUser = userRepository.save(createuser);
-            return ResponseEntity.ok(ResponseBuilder.success(savedUser, "Registration successful"));
+            String accessToken = jwtService.generateAccessToken(savedUser);
+            String refreshToken = jwtService.generateRefreshToken(savedUser);
+            return ResponseEntity.ok(ResponseBuilder.success(new AuthenticationResponse(accessToken, refreshToken, "Registration Successful")));
+
         } catch (ApiException e) {
             logger.error("Registration error: {}", e.getMessage());
             return ResponseEntity.status(e.getStatus()).body(ResponseBuilder.error(e));
