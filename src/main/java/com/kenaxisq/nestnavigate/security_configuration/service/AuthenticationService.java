@@ -105,6 +105,7 @@ public class AuthenticationService {
                 }
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
+                jwtService.saveToken(accessToken, refreshToken, user);
                 return ResponseEntity.ok(ResponseBuilder.success(new AuthenticationResponse(accessToken, refreshToken, "Login Successful")));
             } else {
                 ApiResponse<AuthenticationResponse> errorResponse = ApiResponse.<AuthenticationResponse>builder()
@@ -170,6 +171,7 @@ public class AuthenticationService {
             User savedUser = userRepository.save(createuser);
             String accessToken = jwtService.generateAccessToken(savedUser);
             String refreshToken = jwtService.generateRefreshToken(savedUser);
+            jwtService.saveToken(accessToken, refreshToken, savedUser);
             return ResponseEntity.ok(ResponseBuilder.success(new AuthenticationResponse(accessToken, refreshToken, "Registration Successful")));
 
         } catch (ApiException e) {
@@ -256,6 +258,7 @@ public class AuthenticationService {
                 userRepository.save(user);
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
+                jwtService.saveToken(accessToken, refreshToken, user);
                 return ResponseEntity.ok(ResponseBuilder.success(new AuthenticationResponse(accessToken, refreshToken, "Password reset successful")));
 
             } else {
