@@ -95,12 +95,19 @@ public class UserServiceImpl implements UserService{
             }
             User existingUser = optionalExistingUser.get();
 
-            if (!StringUtils.hasText(user.getEmail())) {
-                user.setEmail(existingUser.getEmail().toLowerCase().trim());
+            // Validate email for uniqueness
+            if (StringUtils.hasText(user.getEmail()) && !user.getEmail().equals(existingUser.getEmail())) {
+                Optional<User> optionalUserByEmail = userRepository.findByEmail(user.getEmail());
+                if (optionalUserByEmail.isPresent()) {
+                    throw new ApiException(ErrorCodes.EMAIL_ALREADY_EXISTS.getCode(),
+                            ErrorCodes.EMAIL_ALREADY_EXISTS.getMessage(),
+                            ErrorCodes.EMAIL_ALREADY_EXISTS.getHttpStatus());
+                }
+                existingUser.setEmail(user.getEmail().toLowerCase().trim());  // Set email after validation
             }
 
             // Validate phone number for uniqueness
-            if (user.getPhone() != null) {
+            if (user.getPhone() != null && !user.getPhone().equals(existingUser.getPhone())) {
                 Optional<User> optionalUserByPhone = userRepository.findByPhone(user.getPhone());
                 if (optionalUserByPhone.isPresent() && !optionalUserByPhone.get().getId().equals(user.getId())) {
                     throw new ApiException(ErrorCodes.PHONE_NUMBER_ALREADY_EXISTS.getCode(),
@@ -110,14 +117,13 @@ public class UserServiceImpl implements UserService{
                 existingUser.setPhone(user.getPhone());
             }
 
-            // Update non-null fields using helper method
             updateNonNullFields(user, existingUser);
 
             // Save and return the updated user
             return userRepository.save(existingUser);
         } catch (ApiException e) {
             logger.error("Error updating user: {}", e.getMessage());
-            throw e; // Rethrow to be handled by global exception handler
+            throw e;
         } catch (Exception e) {
             logger.error("Unexpected error during user update: {}", e.getMessage());
             throw new ApiException(ErrorCodes.INTERNAL_SERVER_ERROR.getCode(),
@@ -234,13 +240,28 @@ public class UserServiceImpl implements UserService{
         }
     }
 
-
     private void updateNonNullFields(User source, User target) {
-        if (StringUtils.hasText(source.getName())) target.setName(source.getName());
-        if (StringUtils.hasText(source.getPassword())) target.setPassword(passwordEncoder.encode(source.getPassword()));
-        if (source.getRole() != null) target.setRole(source.getRole());
-        if (source.getProperties_listed() > 0) target.setProperties_listed(source.getProperties_listed());
-        if (source.getProperties_listing_limit() > 0) target.setProperties_listing_limit(source.getProperties_listing_limit());
-        target.setActive(source.isActive());
+        if (StringUtils.hasText(source.getName()) && !source.getName().equals(target.getName())) {
+            target.setName(source.getName());
+        }
+
+        if (StringUtils.hasText(source.getPassword()) && !passwordEncoder.matches(source.getPassword(), target.getPassword())) {
+            target.setPassword(passwordEncoder.encode(source.getPassword()));
+        }
+
+        if (source.getRole() != null && !source.getRole().equals(target.getRole())) {
+            target.setRole(source.getRole());
+        }
+
+        if (source.getProperties_listed() > 0 && source.getProperties_listed() != target.getProperties_listed()) {
+            target.setProperties_listed(source.getProperties_listed());
+        }
+
+        if (source.getProperties_listing_limit() > 0 && source.getProperties_listing_limit() != target.getProperties_listing_limit()) {
+            target.setProperties_listing_limit(source.getProperties_listing_limit());
+        }
+        if (source.isActive() != target.isActive()) {
+            target.setActive(source.isActive());
+        }
     }
 }
