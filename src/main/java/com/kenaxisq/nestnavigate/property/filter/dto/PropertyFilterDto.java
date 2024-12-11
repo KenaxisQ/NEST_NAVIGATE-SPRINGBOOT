@@ -24,5 +24,6 @@ public class PropertyFilterDto {
     private Directions facing;
     private Integer minNoOfBedrooms;
     private LocalDateTime availableFrom;
+    private String propertyListedFor;
 
 }

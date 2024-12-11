@@ -49,7 +49,11 @@ public class PropertySpecification {
             if (filterDto.getSearchKeyword() != null && !filterDto.getSearchKeyword().isEmpty()) {
                 Predicate titlePredicate = builder.like(root.get("title"), "%" + filterDto.getSearchKeyword() + "%");
                 Predicate descriptionPredicate = builder.like(root.get("description"), "%" + filterDto.getSearchKeyword() + "%");
-                predicates.add(builder.or(titlePredicate, descriptionPredicate));
+                Predicate projectNamePredicate = builder.like(root.get("projectName"), "%" + filterDto.getSearchKeyword() + "%");
+                predicates.add(builder.or(titlePredicate, descriptionPredicate, projectNamePredicate));
+            }
+            if(filterDto.getPropertyListedFor() != null) {
+                predicates.add(builder.equal(root.get("propertyListingFor"), filterDto.getPropertyListedFor()));
             }
 
             return builder.and(predicates.toArray(new Predicate[0]));

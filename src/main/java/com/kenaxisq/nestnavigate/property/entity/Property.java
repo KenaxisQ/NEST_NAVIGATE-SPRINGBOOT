@@ -41,7 +41,7 @@ public class Property {
     private Furniture furnitureStatus;
     @Column(nullable= true)
     private String furnitureStatusDescription;
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
     @Column(nullable = true)
     private Double superBuiltupArea;
@@ -110,11 +110,11 @@ public class Property {
     private Integer views=0;
     @Column(nullable = true)
     private Integer likes=0;
-    @Column(nullable = true)
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String media;
     @Column(nullable = true)
     private LocalDateTime moveInDate;
-    @Column(nullable = true)
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String amenities;
     @Column(nullable = false)
     private String propertyApprovalStatus;
