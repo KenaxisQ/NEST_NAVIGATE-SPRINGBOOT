@@ -245,7 +245,7 @@ public class UserServiceImpl implements UserService{
             target.setName(source.getName());
         }
 
-        if (StringUtils.hasText(source.getPassword()) && !passwordEncoder.matches(source.getPassword(), target.getPassword())) {
+        if (StringUtils.hasText(source.getPassword()) && !target.getPassword().equals(source.getPassword())) {
             target.setPassword(passwordEncoder.encode(source.getPassword()));
         }
 
