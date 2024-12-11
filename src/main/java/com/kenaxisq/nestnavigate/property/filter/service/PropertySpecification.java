@@ -34,10 +34,10 @@ public class PropertySpecification {
             if (filterDto.getRequiredPropertiesIds() != null && !filterDto.getRequiredPropertiesIds().isEmpty()) {
                 predicates.add(root.get("id").in(filterDto.getRequiredPropertiesIds()));
             }
-            if (filterDto.getType() != null) {
+            if (filterDto.getType() != null && !filterDto.getType().isEmpty()) {
                 predicates.add(builder.equal(root.get("type"), filterDto.getType()));
             }
-            if (filterDto.getPropertyCategory() != null) {
+            if (filterDto.getPropertyCategory() != null && !filterDto.getPropertyCategory().isEmpty()) {
                 predicates.add(builder.equal(root.get("propertyCategory"), filterDto.getPropertyCategory()));
             }
             if (filterDto.getMinPrice() != null) {
@@ -52,7 +52,7 @@ public class PropertySpecification {
                 Predicate projectNamePredicate = builder.like(root.get("projectName"), "%" + filterDto.getSearchKeyword() + "%");
                 predicates.add(builder.or(titlePredicate, descriptionPredicate, projectNamePredicate));
             }
-            if(filterDto.getPropertyListedFor() != null) {
+            if(filterDto.getPropertyListedFor() != null && !filterDto.getPropertyListedFor().isEmpty()) {
                 predicates.add(builder.equal(root.get("propertyListingFor"), filterDto.getPropertyListedFor()));
             }
 
