@@ -65,7 +65,7 @@ public class PropertyDtoMapper {
 
         // Map Land-specific properties
         landDto.setFacing(aggDto.getFacing());
-        landDto.setSuperBuiltUpArea(aggDto.getSuperBuiltupArea());
+        landDto.setSuperBuiltupArea(aggDto.getSuperBuiltupArea());
         landDto.setLength(aggDto.getLength());
         landDto.setWidth(aggDto.getWidth());
 
@@ -154,7 +154,7 @@ public class PropertyDtoMapper {
                 cDto.setMoveInDate(property.getMoveInDate());
             } else if (dto instanceof LandDto lDto) {
                 lDto.setFacing(property.getFacing());
-                lDto.setSuperBuiltUpArea(property.getSuperBuiltupArea());
+                lDto.setSuperBuiltupArea(property.getSuperBuiltupArea());
                 lDto.setLength(property.getLength());
                 lDto.setWidth(property.getWidth());
             } else if (dto instanceof PgDto pDto) {

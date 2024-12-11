@@ -34,7 +34,7 @@ public class PropertySpecification {
             if (filterDto.getRequiredPropertiesIds() != null && !filterDto.getRequiredPropertiesIds().isEmpty()) {
                 predicates.add(root.get("id").in(filterDto.getRequiredPropertiesIds()));
             }
-            if (filterDto.getType() != null) {
+            if (filterDto.getType() != null && !filterDto.getType().isEmpty()) {
                 predicates.add(builder.equal(root.get("type"), filterDto.getType()));
             }
             if (filterDto.getPropertyCategory() != null) {

@@ -16,7 +16,7 @@ public class LandDto extends PropertyDto{
     private Directions facing;
 
     @RequiredField(message = "Super built-up area is required")
-    private Double superBuiltUpArea;
+    private Double superBuiltupArea;
 
     @RequiredField(message = "Length is required")
     private Double length;
