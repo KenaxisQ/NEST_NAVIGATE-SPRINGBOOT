@@ -35,7 +35,7 @@ public class MediaController {
         return ResponseEntity.ok(ResponseBuilder.success(mediaService.uploadFiles(mediaUploadDto),"File Uploaded Successfully"));
     }
 
-    @GetMapping("/read")
+    @PostMapping("/read")
     public ResponseEntity<ApiResponse<List<byte[]>>> readFile(@RequestBody MediaReadDto mediaReadDto) throws IOException {
         return ResponseEntity.ok(ResponseBuilder.success(mediaService.readImage(mediaReadDto), "File Retrieved Successfully"));
     }

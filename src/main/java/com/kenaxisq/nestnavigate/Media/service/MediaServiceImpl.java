@@ -99,7 +99,7 @@ public class MediaServiceImpl implements MediaService {
     }
 
     public List<byte[]> readImage(MediaReadDto mediaReadDto) {
-        boolean isProperty = mediaReadDto.isProperty();
+        Boolean isProperty = mediaReadDto.getIsProperty();
         String identifier = mediaReadDto.getIdentifier();
         String fileName = mediaReadDto.getFileName();
 
@@ -255,16 +255,16 @@ public class MediaServiceImpl implements MediaService {
              Session session = connection.authenticate(new AuthenticationContext(USERNAME, PASSWORD.toCharArray(), null))) {
 
             String filePath;
-            if (mediaReadDto.isProperty() && mediaReadDto.getFileName() != null) {
+            if (mediaReadDto.getIsProperty() && mediaReadDto.getFileName() != null) {
                 filePath = mediaReadDto.getIdentifier() + "/" + mediaReadDto.getFileName();
-            } else if (mediaReadDto.isProperty()) {
+            } else if (mediaReadDto.getIsProperty()) {
                 filePath = mediaReadDto.getIdentifier();
             } else {
                 filePath = mediaReadDto.getFileName();
             }
 
             logger.info("Preparing to delete file at path: {}", filePath);
-            DiskShare share = (DiskShare) session.connectShare(mediaReadDto.isProperty() ? SHARE_NAME_PROPERTIES : SHARE_NAME_USER_PROFILES);
+            DiskShare share = (DiskShare) session.connectShare(mediaReadDto.getIsProperty() ? SHARE_NAME_PROPERTIES : SHARE_NAME_USER_PROFILES);
 
             try {
                 share.rm(filePath);
@@ -283,7 +283,7 @@ public class MediaServiceImpl implements MediaService {
         }
 
         try {
-            if (!mediaReadDto.isProperty()) {
+            if (!mediaReadDto.getIsProperty()) {
                 User user = userService.getUser(mediaReadDto.getIdentifier());
                 user.setProfilePic(null);
 

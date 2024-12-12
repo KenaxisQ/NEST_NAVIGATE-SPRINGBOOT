@@ -8,5 +8,5 @@ import lombok.Setter;
 public class MediaReadDto {
     String identifier;
     String fileName;
-    boolean isProperty;
+    Boolean isProperty;
 }
