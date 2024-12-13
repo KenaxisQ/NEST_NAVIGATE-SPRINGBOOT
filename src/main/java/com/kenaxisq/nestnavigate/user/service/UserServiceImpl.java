@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService{
             if (!passwordEncoder.matches(resetPasswordDto.getOldPassword(), user.getPassword())) {
                 throw new ApiException(ErrorCodes.INVALID_OLD_PASSWORD);
                 }
-            else if (!passwordEncoder.matches(resetPasswordDto.getNewPassword(), user.getPassword())) {
+            else if (passwordEncoder.matches(resetPasswordDto.getNewPassword(), user.getPassword())) {
                 throw new ApiException(ErrorCodes.PASSWORD_SAME_AS_CURRENT);
             }
 
