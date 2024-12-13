@@ -14,6 +14,8 @@ public enum ErrorCodes {
     ACCOUNT_LOCKED("AUTH_005", "Account has been locked", HttpStatus.FORBIDDEN),
     SESSION_EXPIRED("AUTH_006", "Session has expired", HttpStatus.UNAUTHORIZED),
     INVALID_OLD_PASSWORD("AUT_007", "Old password is incorrect", HttpStatus.BAD_REQUEST),
+    PASSWORD_SAME_AS_CURRENT("AUT_008", "New password cannot be the same as the current password", HttpStatus.BAD_REQUEST),
+
     // User Related Errors (USR_XXX)
     USER_NOT_FOUND("USR_NOT_FOUND", "User not found", HttpStatus.NOT_FOUND),
     USER_NOT_VERIFIED("USR_NOT_VERIFIED", "User not verified, please verify your email", HttpStatus.UNAUTHORIZED),

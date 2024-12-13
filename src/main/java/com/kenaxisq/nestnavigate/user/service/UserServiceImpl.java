@@ -66,11 +66,13 @@ public class UserServiceImpl implements UserService{
             // Fetch user by identifier (email or phone)
             User user = userRepository.findById(resetPasswordDto.getUserId())
                     .orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND.getCode(), "User not found", HttpStatus.NOT_FOUND));
-
             // Verify the old password
             if (!passwordEncoder.matches(resetPasswordDto.getOldPassword(), user.getPassword())) {
                 throw new ApiException(ErrorCodes.INVALID_OLD_PASSWORD);
                 }
+            else if (!passwordEncoder.matches(resetPasswordDto.getNewPassword(), user.getPassword())) {
+                throw new ApiException(ErrorCodes.PASSWORD_SAME_AS_CURRENT);
+            }
 
             // Encode and set the new password
             user.setPassword(passwordEncoder.encode(resetPasswordDto.getNewPassword()));
