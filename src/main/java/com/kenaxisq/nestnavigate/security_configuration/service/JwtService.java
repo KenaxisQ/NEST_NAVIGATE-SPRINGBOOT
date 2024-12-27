@@ -154,13 +154,10 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public void saveToken(String token, User user, boolean isRefresh) {
+    public void saveToken(String accessToken,String refreshToken,User user) {
         Token newToken = new Token();
-        if (isRefresh) {
-            newToken.setRefreshToken(token);
-        } else {
-            newToken.setAccessToken(token);
-        }
+        newToken.setRefreshToken(refreshToken);
+        newToken.setAccessToken(accessToken);
         newToken.setUser(user);
         newToken.setLoggedOut(false);
         tokenRepository.save(newToken);

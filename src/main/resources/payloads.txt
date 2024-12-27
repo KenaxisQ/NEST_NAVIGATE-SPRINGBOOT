@@ -1,0 +1,132 @@
+<--- Payload for PG ------------>
+
+{
+  "title": "Cozy PG near Central Park",
+  "type": "Shared Accommodation",
+  "propertyCategory": "PG",
+  "propertyListingFor": "Rent",
+  "projectName": "Green Stay",
+  "description": "Spacious PG with all amenities included.",
+  "price": 500.0,
+  "advance": 100.0,
+  "isNegotiable": true,
+  "primaryContact": "+1234567890",
+  "secondaryContact": "+0987654321",
+  "mandal": "City Center",
+  "village": "Downtown",
+  "zip": "500081",
+  "address": "123 Main St",
+  "media": "property_image.jpg",
+  "status": "AVAILABLE",
+  "isFeatured": false,
+  "furnitureStatus": "FULLY_FURNISHED",
+  "furnitureStatusDescription": "Newly added furniture"
+}
+
+<--- Payload for LAND ------------>
+
+{
+  "title": "Expansive Land Plot",
+  "type": "Plot",
+  "propertyCategory": "LAND",
+  "propertyListingFor": "Sale",
+  "projectName": "Green Acres",
+  "description": "Ideal plot for industrial development.",
+  "price": 50000.0,
+  "advance": 5000.0,
+  "isNegotiable": false,
+  "primaryContact": "+1234567890",
+  "secondaryContact": "+0987654321",
+  "mandal": "Rural",
+  "village": "Countryside",
+  "zip": "800081",
+  "address": "Lot A, Industrial Park",
+  "media": "land_image.jpg",
+  "status": "AVAILABLE",
+  "isFeatured": true,
+  "facing": "WEST",
+  "superBuiltupArea": 10000.0,
+  "length": 100.0,
+  "width": 100.0
+}
+
+<--- Payload for RESIDENTIAL ------------>
+
+{
+  "title": "Luxury Residential Suite",
+  "type": "Apartment",
+  "propertyCategory": "RESIDENTIAL",
+  "propertyListingFor": "Sale",
+  "projectName": "Skyline Residency",
+  "description": "Modern apartment with a panoramic view of the city.",
+  "price": 200000.0,
+  "advance": 20000.0,
+  "isNegotiable": false,
+  "primaryContact": "+1234567890",
+  "secondaryContact": "+0987654321",
+  "mandal": "Urban Estates",
+  "village": "Hilltop",
+  "zip": "600081",
+  "address": "456 Skyline Ave",
+  "media": "residential_image.jpg",
+  "status": "BOOKED",
+  "isFeatured": true,
+  "facing": "NORTH",
+  "furnitureStatus": "SEMI_FURNISHED",
+  "furnitureStatusDescription": "Partially furnished with basic utilities",
+  "superBuiltupArea": 1500.0,
+  "carpetArea": 1200.0,
+  "length": 40.0,
+  "width": 30.0,
+  "poojaRoom": 1,
+  "noOfBedrooms": 3,
+  "noOfBathrooms": 2,
+  "noOfRooms": 5,
+  "noOfBalconies": 2,
+  "moveInDate": "2023-12-01T00:00:00"
+}
+
+<--- Payload for COMMERCIAL -------------->
+
+{
+  "title": "Prime Commercial Space",
+  "type": "Office",
+  "propertyCategory": "COMMERCIAL",
+  "propertyListingFor": "Lease",
+  "projectName": "Business Tower",
+  "description": "Spacious office space in the heart of the business district.",
+  "price": 1500.0,
+  "advance": 300.0,
+  "isNegotiable": true,
+  "primaryContact": "+1234567890",
+  "secondaryContact": "+0987654321",
+  "mandal": "Corporate Square",
+  "village": "Business Hills",
+  "zip": "700081",
+  "address": "789 Corporate Blvd",
+  "media": "commercial_image.jpg",
+  "status": "AVAILABLE",
+  "isFeatured": false,
+  "facing": "EAST",
+  "furnitureStatus": "UNFURNISHED",
+  "furnitureStatusDescription": "Unfurnished space for custom setups",
+  "superBuiltupArea": 3000.0,
+  "carpetArea": 2500.0,
+  "length": 50.0,
+  "width": 60.0,
+  "moveInDate": "2023-11-15T00:00:00"
+}
+
+<--- Property Filter Payload -------------->
+{
+  "type": "Shared Accommodation",
+  "propertyCategory": "PG",
+  "minPrice": 450.0,
+  "maxPrice": 600.0,
+  "status": "AVAILABLE",
+  "furnitureStatus": "FULLY_FURNISHED",
+  "facing": "EAST",
+  "minNoOfBedrooms": 1,
+  "availableFrom": "2023-11-20T00:00:00"
+  "searchKeyword" : "Central"
+}

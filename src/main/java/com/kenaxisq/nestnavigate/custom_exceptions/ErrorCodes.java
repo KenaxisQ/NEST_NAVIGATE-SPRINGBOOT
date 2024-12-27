@@ -14,6 +14,8 @@ public enum ErrorCodes {
     ACCOUNT_LOCKED("AUTH_005", "Account has been locked", HttpStatus.FORBIDDEN),
     SESSION_EXPIRED("AUTH_006", "Session has expired", HttpStatus.UNAUTHORIZED),
     INVALID_OLD_PASSWORD("AUT_007", "Old password is incorrect", HttpStatus.BAD_REQUEST),
+    PASSWORD_SAME_AS_CURRENT("AUT_008", "New password cannot be the same as the current password", HttpStatus.BAD_REQUEST),
+
     // User Related Errors (USR_XXX)
     USER_NOT_FOUND("USR_NOT_FOUND", "User not found", HttpStatus.NOT_FOUND),
     USER_NOT_VERIFIED("USR_NOT_VERIFIED", "User not verified, please verify your email", HttpStatus.UNAUTHORIZED),
@@ -53,8 +55,8 @@ public enum ErrorCodes {
     TIMEOUT_ERROR("SYS_004", "Operation timed out", HttpStatus.GATEWAY_TIMEOUT),
 
     // Property Errors (PRTY_XXX)
-    ERR_PROPERTY_NOT_FOUND("PRTY_001", "No Property with the specified ID found", HttpStatus.NOT_FOUND);
-
+    ERR_PROPERTY_NOT_FOUND("PRTY_001", "No Property with the specified ID found", HttpStatus.NOT_FOUND),
+    INVALID_PROPERTY_CATEGORY("PRTY_002", "The property category must be RESIDENTIAL, COMMERCIAL, LAND, or PG.", HttpStatus.BAD_REQUEST);
     private final String code;
     private final String message;
     private final HttpStatus httpStatus;

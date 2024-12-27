@@ -1,5 +1,7 @@
 package com.kenaxisq.nestnavigate.security_configuration.service;
 
+import com.kenaxisq.nestnavigate.registerMail.entity.VerifyUserMail;
+import com.kenaxisq.nestnavigate.registerMail.service.VerifyUserMailService;
 import com.kenaxisq.nestnavigate.security_configuration.dto.*;
 import com.kenaxisq.nestnavigate.user.entity.User;
 import com.kenaxisq.nestnavigate.user.repository.UserRepository;
@@ -31,7 +33,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
-
+    private final VerifyUserMailService verifyUserMailService;
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     @Autowired
@@ -40,13 +42,15 @@ public class AuthenticationService {
                                  JwtService jwtService,
                                  AuthenticationManager authenticationManager,
                                  UserService userService,
-                                 EmailService emailService) {
+                                 EmailService emailService,
+                                 VerifyUserMailService verifyUserMailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.emailService = emailService;
+        this.verifyUserMailService = verifyUserMailService;
     }
 
     public ResponseEntity<?> login(String identifier, String password) {
@@ -62,10 +66,9 @@ public class AuthenticationService {
             if (userService.validatePassword(user, password)) {
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
-                jwtService.saveToken(accessToken, user, false);
-                jwtService.saveToken(refreshToken, user, true);
+                jwtService.saveToken(accessToken, refreshToken, user);
                 String message = "Login successful";
-                if(!user.isUserVerified()) message = "Login successful, Please verify your account";
+//                if(!user.isUserVerified()) message = "Login successful, Please verify your account";
                 AuthenticationResponse response = new AuthenticationResponse(accessToken, refreshToken, message);
                 return ResponseEntity.ok(ResponseBuilder.success(response));
             }
@@ -79,11 +82,9 @@ public class AuthenticationService {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseBuilder.error(HttpStatus.UNAUTHORIZED, "Invalid credentials", ErrorCodes.INVALID_CREDENTIALS.getCode()));
     }
 
-    public ResponseEntity<?> loginWithOtp(String email) {
+    public ResponseEntity<?> loginWithOtp(String identifier) {
         try {
-            User user = userService.findByEmail(email);
-            if (!user.isUserVerified())
-                throw new ApiException(ErrorCodes.USER_NOT_VERIFIED);
+            User user = userService.findByEmailOrPhone(identifier);
             sendVerificationCodeToEmail(user, "LOGIN_OTP");
            return ResponseEntity.ok(ResponseBuilder.success(user, "OTP sent successful!!"));
         } catch (ApiException e) {
@@ -95,15 +96,16 @@ public class AuthenticationService {
         }
     }
 
-    public ResponseEntity<ApiResponse<?>> validateEmailOtpLogin(String email, String otp) {
+    public ResponseEntity<ApiResponse<?>> validateEmailOtpLogin(String identifier, String otp) {
         try {
-            User user = userService.findByEmail(email);
-            if (!user.isUserVerified()) {
-                throw new ApiException(ErrorCodes.USER_NOT_VERIFIED);
-            }
+            User user = userService.findByEmailOrPhone(identifier);
             if (user.getVerificationCode().equals(otp)) {
+                if (!user.isUserVerified()) {
+                    user.setUserVerified(true);
+                }
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
+                jwtService.saveToken(accessToken, refreshToken, user);
                 return ResponseEntity.ok(ResponseBuilder.success(new AuthenticationResponse(accessToken, refreshToken, "Login Successful")));
             } else {
                 ApiResponse<AuthenticationResponse> errorResponse = ApiResponse.<AuthenticationResponse>builder()
@@ -136,6 +138,7 @@ public class AuthenticationService {
             User user = userService.findByEmail(email);
             String accessToken = jwtService.generateAccessToken(user);
             String refreshToken = jwtService.generateRefreshToken(user);
+            jwtService.saveToken(accessToken, refreshToken, user);
             return ResponseEntity.ok(ResponseBuilder.success(new AuthenticationResponse(accessToken, refreshToken, "Login Successful")));
         }
         catch (ApiException e) {
@@ -150,31 +153,27 @@ public class AuthenticationService {
 
     public ResponseEntity<?> register(RegisterUserDto user) {
         try {
+           VerifyUserMail verifyUserMail = verifyUserMailService.getVerifyUserMailByEmail(user.getEmail().toLowerCase());
+           if(!verifyUserMail.getVerified())
+               throw new ApiException("MAIL_NOT_VERIFIED", "Please verify your mail id", HttpStatus.BAD_REQUEST);
             validateRegisterUserDto(user);
-
             Optional<User> existingUserByEmail = userRepository.findByEmail(user.getEmail());
             Optional<User> existingUserByPhone = userRepository.findByPhone(user.getPhone());
-
-            if (existingUserByEmail.isPresent() || existingUserByPhone.isPresent()) {
-                User foundUser = existingUserByEmail.orElseGet(existingUserByPhone::get);
-
-                if (!foundUser.isUserVerified()) {
-                    sendVerificationCodeToEmail(foundUser, "REGISTRATION");
-                    return ResponseEntity.ok(ResponseBuilder.success(foundUser, "User already found, verification code sent to your email"));
-                }
-
-                throw new ApiException(ErrorCodes.USER_ALREADY_EXISTS.getCode(), "User already exists with this email or phone", HttpStatus.CONFLICT);
+            if (existingUserByEmail.isPresent()) {
+                throw new ApiException(ErrorCodes.USER_ALREADY_EXISTS.getCode(), "User already exists with this email", HttpStatus.CONFLICT);
             }
-
-            User createuser = new User(user.getName(), user.getEmail(),user.getPhone(),user.getPassword());
-            createuser.setPassword(passwordEncoder.encode(user.getPassword()));
-
+            else if (existingUserByPhone.isPresent()) {
+                throw new ApiException(ErrorCodes.USER_ALREADY_EXISTS.getCode(), "User already exists with this phone", HttpStatus.CONFLICT);
+            }
+            User createuser = new User(user.getName(), user.getEmail().toLowerCase(),user.getPhone(),passwordEncoder.encode(user.getPassword()));
+            createuser.setUserVerified(verifyUserMail.getVerified());
+            if (user.getProfilePicture()!=null)createuser.setProfilePic(user.getProfilePicture());
             User savedUser = userRepository.save(createuser);
+            String accessToken = jwtService.generateAccessToken(savedUser);
+            String refreshToken = jwtService.generateRefreshToken(savedUser);
+            jwtService.saveToken(accessToken, refreshToken, savedUser);
+            return ResponseEntity.ok(ResponseBuilder.success(new AuthenticationResponse(accessToken, refreshToken, "Registration Successful")));
 
-            // Send the verification email
-            sendVerificationCodeToEmail(savedUser,"REGISTRATION");
-
-            return ResponseEntity.ok(ResponseBuilder.success(savedUser, "Registration successful"));
         } catch (ApiException e) {
             logger.error("Registration error: {}", e.getMessage());
             return ResponseEntity.status(e.getStatus()).body(ResponseBuilder.error(e));
@@ -191,7 +190,7 @@ public class AuthenticationService {
             if (jwtService.isValidRefreshToken(refreshToken, user)) {
                 String newAccessToken = jwtService.generateAccessToken(user);
                 String newRefreshToken = jwtService.generateRefreshToken(user);
-                jwtService.saveToken(newAccessToken, user, false);
+                jwtService.saveToken(newAccessToken, newRefreshToken, user);
                 AuthenticationResponse response = new AuthenticationResponse(newAccessToken, newRefreshToken, "Token refreshed successfully");
                 return ResponseEntity.ok(ResponseBuilder.success(response));
             } else {
@@ -247,7 +246,7 @@ public class AuthenticationService {
 
     }
 
-    public ResponseEntity<ApiResponse<String>> verifyAndResetPassword(VerifyForgotPasswordDto verifyForgotPasswordDto) {
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> verifyAndResetPassword(VerifyForgotPasswordDto verifyForgotPasswordDto) {
         try {
             Optional<User> optionalUser = userRepository.findByEmailOrPhone(verifyForgotPasswordDto.getIdentifier());
             User user = optionalUser.orElseThrow(() -> new ApiException(ErrorCodes.USER_NOT_FOUND.getCode(), "User not found", HttpStatus.NOT_FOUND));
@@ -257,8 +256,11 @@ public class AuthenticationService {
                 user.setVerificationCode(null);
                 user.setVerificationCodeExpiresAt(null);
                 userRepository.save(user);
+                String accessToken = jwtService.generateAccessToken(user);
+                String refreshToken = jwtService.generateRefreshToken(user);
+                jwtService.saveToken(accessToken, refreshToken, user);
+                return ResponseEntity.ok(ResponseBuilder.success(new AuthenticationResponse(accessToken, refreshToken, "Password reset successful")));
 
-                return ResponseEntity.ok(ResponseBuilder.success(null, "Password reset successful"));
             } else {
                 throw new ApiException(ErrorCodes.VALIDATION_FAILED.getCode(), "Invalid verification code or the code has expired", HttpStatus.BAD_REQUEST);
             }

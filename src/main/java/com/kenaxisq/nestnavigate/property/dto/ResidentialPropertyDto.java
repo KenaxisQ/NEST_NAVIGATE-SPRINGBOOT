@@ -1,5 +1,6 @@
 package com.kenaxisq.nestnavigate.property.dto;
 
+import com.kenaxisq.nestnavigate.property.validators.RequiredField;
 import com.kenaxisq.nestnavigate.user.entity.User;
 import com.kenaxisq.nestnavigate.utils.property.*;
 import lombok.AllArgsConstructor;
@@ -12,38 +13,44 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResidentialPropertyDto {
-    private String title;
-    private String type;
-    private final PropertyCategory propertyCategory = PropertyCategory.RESIDENTIAL;
+public class ResidentialPropertyDto extends PropertyDto {
+
+    @RequiredField(message = "Facing direction is required")
     private Directions facing;
-    private PropertyListingType propertyListingFor;
-    private String projectName;
+
+    @RequiredField(message = "Furniture status is required")
     private Furniture furnitureStatus;
+
+    @RequiredField(message = "Furniture status description is required")
     private String furnitureStatusDescription;
-    private String description;
-    private Double superBuiltUpArea;
+
+    @RequiredField(message = "Super built-up area is required")
+    private Double superBuiltupArea;
+
+    @RequiredField(message = "Carpet area is required")
     private Double carpetArea;
-    private Double price;
-    private Double advance;
+
+    @RequiredField(message = "Length is required")
     private Double length;
+
+    @RequiredField(message = "Width is required")
     private Double width;
+
+    @RequiredField(message = "Pooja room count is required")
     private Integer poojaRoom;
+
+    @RequiredField(message = "Number of bedrooms is required")
     private Integer noOfBedrooms;
+
+    @RequiredField(message = "Number of bathrooms is required")
     private Integer noOfBathrooms;
+
+    @RequiredField(message = "Number of rooms is required")
     private Integer noOfRooms;
+
+    @RequiredField(message = "Number of balconies is required")
     private Integer noOfBalconies;
-    private Boolean isNegotiable;
-    private User owner;
-    private PropertyStatus status;
-    private Boolean isFeatured = false;
-    private LocalDateTime updatedDate = LocalDateTime.now();
-    private String primaryContact;
-    private String secondaryContact;
-    private String mandal;
-    private String village;
-    private String zip;
-    private String address;
-    private String media;
+
+    @RequiredField(message = "Move-in date is required")
     private LocalDateTime moveInDate;
 }

@@ -23,9 +23,9 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/{identifier}")
-    public ResponseEntity<User> getUserByEmailOrPhone(@PathVariable String identifier) {
-        return ResponseEntity.ok(userService.findByEmailOrPhone(identifier));
+    @GetMapping("/emailOrPhone/{identifier}")
+    public ResponseEntity<ApiResponse<User>> getUserByEmailOrPhone(@PathVariable String identifier) {
+        return ResponseEntity.ok(ResponseBuilder.success(userService.findByEmailOrPhone(identifier), "User Retrieved successfully"));
     }
 
     @PutMapping("/resetPassword")
@@ -48,6 +48,10 @@ public class UserController {
     @GetMapping("/all")
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(ResponseBuilder.success(userService.getUsers(),"Users Retrieved Successfully").getData());
+    }
+    @PutMapping("/addToFavourites/{userId}")
+    public ResponseEntity<ApiResponse<String>> addToFavourites(@PathVariable String userId, @RequestBody String wishList) {
+        return ResponseEntity.ok(ResponseBuilder.success(userService.updateFavourites(userId, wishList)));
     }
 
 }

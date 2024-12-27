@@ -1,6 +1,7 @@
 package com.kenaxisq.nestnavigate.utils.property;
 
 public enum Directions {
+    NOT_SPECIFIED,
 EAST,
     WEST,
     NORTH,

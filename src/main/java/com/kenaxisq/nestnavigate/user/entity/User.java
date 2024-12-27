@@ -70,12 +70,16 @@ public class User implements UserDetails {
     @Column(nullable = true)
     private String profilePic;
 
+    @Column(nullable = true)
+    private String favourites;
+
     public User(String name, String email, String phone, String password) {
         setName(name);
         setEmail(email);
         setPhone(phone);
         setPassword(password);
     }
+
 
     @PrePersist
     protected void onCreate() {

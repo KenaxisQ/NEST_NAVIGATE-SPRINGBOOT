@@ -1,5 +1,7 @@
 package com.kenaxisq.nestnavigate.property.entity;
 
+import com.kenaxisq.nestnavigate.utils.property.Directions;
+import com.kenaxisq.nestnavigate.utils.property.Furniture;
 import com.kenaxisq.nestnavigate.utils.property.PropertyStatus;
 import com.kenaxisq.nestnavigate.user.entity.User;
 import jakarta.persistence.*;
@@ -20,8 +22,8 @@ import java.time.temporal.ChronoUnit;
 @AllArgsConstructor
 public class Property {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @GenericGenerator(name="uuid", strategy = "uuid")
+//    @GeneratedValue(strategy = GenerationType.UUID)
+//    @GenericGenerator(name="uuid", strategy = "uuid")
     private String id;
     @Column(nullable = false)
     private String title;
@@ -30,25 +32,25 @@ public class Property {
     @Column(nullable = false)
     private String propertyCategory;
     @Column(nullable = true)
-    private String facing;
+    private Directions facing;
     @Column(nullable = false)
     private String propertyListingFor;
     @Column(nullable = false)
     private String projectName;
     @Column(nullable = true)
-    private String furnitureStatus;
+    private Furniture furnitureStatus;
     @Column(nullable= true)
     private String furnitureStatusDescription;
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
     @Column(nullable = true)
-    private Double super_builtup_area;
+    private Double superBuiltupArea;
     @Column(nullable = true)
-    private Double carpet_area;
+    private Double carpetArea;
     @Column(nullable = false)
     private Double price;
     @Column(nullable = false)
-    private Double Advance;
+    private Double advance;
     @Column(nullable = true)
     private Double length;
     @Column(nullable = true)
@@ -67,9 +69,9 @@ public class Property {
     private Boolean isNegotiable;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User Owner;
+    private User owner;
     @Column(nullable = false)
-    private String status = PropertyStatus.AVAILABLE.name();
+    private PropertyStatus status = PropertyStatus.AVAILABLE;
     @Column(nullable = false)
     private Boolean isFeatured = false;
     @Column(nullable = false)
@@ -105,14 +107,28 @@ public class Property {
     @Column(nullable = true)
     private String latitude;
     @Column(nullable = true)
-    private int views=0;
+    private Integer views=0;
     @Column(nullable = true)
-    private int likes=0;
-    @Column(nullable = true)
-    private String Media;
+    private Integer likes=0;
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String media;
     @Column(nullable = true)
     private LocalDateTime moveInDate;
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String amenities;
+    @Column(nullable = false)
+    private String propertyApprovalStatus;
 
+    public void initializeApprovalStatus(String role) {
+        switch (role) {
+            case "ADMIN":
+                this.propertyApprovalStatus = "Approved";
+                break;
+            default:
+                this.propertyApprovalStatus = "Awaiting Approval";
+                break;
+        }
+    }
     public void incrementViewsOfAProperty() {
        setViews(getViews()+1);
     }

@@ -1,9 +1,13 @@
 package com.kenaxisq.nestnavigate.custom_exceptions;
 
+import com.kenaxisq.nestnavigate.property.dto.PropertyDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
+//
+//import javax.validation.ConstraintViolation;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -11,6 +15,7 @@ import org.springframework.http.HttpStatus;
 public class ApiException extends RuntimeException{
     private final HttpStatus status;
     private final String errorCode;
+//    private T data;
     public ApiException(ErrorCodes Error){
 
         super(Error.getMessage());
@@ -25,4 +30,9 @@ public class ApiException extends RuntimeException{
         this.status = status;
 
     }
+//    public ApiResponse(Set<ConstraintViolation<PropertyDto>> violations) {
+//        super("Validation failed");
+//        this.status = HttpStatus.BAD_REQUEST
+//        this.data = (T) violations;
+//    }
 }
